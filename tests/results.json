@@ -1,0 +1,446 @@
+[
+ {
+  "no": 1,
+  "name": "เปิดเกมได้",
+  "status": "PASS",
+  "detail": "assets failed=0"
+ },
+ {
+  "no": 2,
+  "name": "เริ่มเกมได้ (แตะจริงผ่าน touchscreen)",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "no": 3,
+  "name": "เลือกเมืองได้",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "no": 4,
+  "name": "เลือกด่านได้ (+เมืองล็อกแสดงเงื่อนไข)",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "no": 5,
+  "name": "จัดทีมได้ (ถอด/ใส่ตัวละคร)",
+  "status": "PASS",
+  "detail": "3->2->3"
+ },
+ {
+  "no": 6,
+  "name": "เริ่มสนามได้",
+  "status": "PASS",
+  "detail": "T1-S1"
+ },
+ {
+  "no": 7,
+  "name": "วางเครื่องโดนัทได้",
+  "status": "PASS",
+  "detail": "donut 200->150"
+ },
+ {
+  "no": 8,
+  "name": "เครื่องผลิตโดนัทตามเวลา",
+  "status": "PASS",
+  "detail": "before 6s=0, after=1"
+ },
+ {
+  "no": 9,
+  "name": "โดนัทเด้งออกมา (มีฟิสิกส์ตก/เด้ง)",
+  "status": "PASS",
+  "detail": "donut object has velocity and lands on groundY"
+ },
+ {
+  "no": 10,
+  "name": "กดเก็บโดนัทได้",
+  "status": "PASS",
+  "detail": "150->200"
+ },
+ {
+  "no": 11,
+  "name": "เพิ่มยอดโดนัทถูกต้อง (+50 ตาม config, แตะซ้ำไม่เพิ่ม)",
+  "status": "PASS",
+  "detail": "+50, double-tap +0"
+ },
+ {
+  "no": "8b",
+  "name": "รอบผลิต Lv1 = 20 วินาที",
+  "status": "PASS",
+  "detail": "timer remaining 17.52s after 2.5s"
+ },
+ {
+  "no": 12,
+  "name": "สร้างตัวละครได้",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "no": 13,
+  "name": "หัก Cost ถูกต้อง",
+  "status": "PASS",
+  "detail": "200->100"
+ },
+ {
+  "no": 14,
+  "name": "วางช่องที่ไม่ว่างไม่ได้ (ไม่หักโดนัท)",
+  "status": "PASS",
+  "detail": "cell (3,2) occupied"
+ },
+ {
+  "no": "14b",
+  "name": "โดนัทไม่พอ: เลือกการ์ดไม่ได้ + แจ้งเตือน",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "no": "4.2",
+  "name": "Grid มีข้อมูลช่องครบ (เรียก (5,9) ได้)",
+  "status": "PASS",
+  "detail": "[5, 9, 1340, 690, False, 'Normal Ground', True]"
+ },
+ {
+  "no": 15,
+  "name": "ตัวละครหันถูกทิศทาง",
+  "status": "PASS",
+  "detail": "ตรวจด้วยตา: ภาพต้นฉบับฝ่ายหมีหันขวา ซอมบี้หันซ้าย ไม่มีการกลับภาพ (ดู screenshot t20)"
+ },
+ {
+  "no": 16,
+  "name": "ซอมบี้เกิดตามเวลา (Wave 1 delay 25s)",
+  "status": "PASS",
+  "detail": "first spawn at t=25.28333333333318"
+ },
+ {
+  "no": 17,
+  "name": "ซอมบี้เดินถูกเลน",
+  "status": "PASS",
+  "detail": "rows [2]->[2]"
+ },
+ {
+  "no": 18,
+  "name": "ซอมบี้โจมตีตัวป้องกัน",
+  "status": "PASS",
+  "detail": "Pot Shield HP 1300->1289"
+ },
+ {
+  "no": 22,
+  "name": "HP ลดถูกต้องตามสูตร (22 ATK − 8 DEF) × (1−0.2) = 11 ต่อครั้ง",
+  "status": "PASS",
+  "detail": "lost 11 = 1 bites × 11"
+ },
+ {
+  "no": 23,
+  "name": "Damage Number แสดง",
+  "status": "PASS",
+  "detail": "1 numbers on screen"
+ },
+ {
+  "no": 21,
+  "name": "ตัวละครโจมตีตอบโต้",
+  "status": "PASS",
+  "detail": "probe zombie hp 140/200"
+ },
+ {
+  "no": 19,
+  "name": "ซอมบี้ระยะไกลขว้างของ (หยุดในระยะ 3.5 ช่อง)",
+  "status": "PASS",
+  "detail": "state=throw, x=7.00, target col 4"
+ },
+ {
+  "no": 20,
+  "name": "Projectile ชนเป้าหมาย (Collision + Damage)",
+  "status": "PASS",
+  "detail": "target HP 1300->1289 (rock 22−8 DEF, ×0.8 = 11)"
+ },
+ {
+  "no": "10.7",
+  "name": "ซอมบี้ระยะไกลเดินต่อเมื่อไม่มีเป้าหมาย",
+  "status": "PASS",
+  "detail": "x 9.00->8.40"
+ },
+ {
+  "no": 24,
+  "name": "สถานะผิดปกติทำงาน (Slow 45% + Poison 6/วิ)",
+  "status": "PASS",
+  "detail": "moved 0.242 (expect 0.242), poison −12"
+ },
+ {
+  "no": 25,
+  "name": "ตัวละครตายเมื่อ HP หมด (นับตายครั้งเดียว, ช่องว่างคืน)",
+  "status": "PASS",
+  "detail": "unitsLost=1"
+ },
+ {
+  "no": 26,
+  "name": "ซอมบี้ตายเมื่อ HP หมด (ไม่ตายซ้ำ)",
+  "status": "PASS",
+  "detail": "killed +1"
+ },
+ {
+  "no": "16.2",
+  "name": "Pause หยุด simulation/การเดิน/timer",
+  "status": "PASS",
+  "detail": "t 45.78->45.78"
+ },
+ {
+  "no": "5.4",
+  "name": "อัปเกรดเครื่องผลิต (ยกเลิกไม่หัก, ยืนยันหัก 75 → Lv2 16 วิ)",
+  "status": "PASS",
+  "detail": "lv=2, donuts 300->225"
+ },
+ {
+  "no": 27,
+  "name": "Wave ทำงานตามลำดับ",
+  "status": "PASS",
+  "detail": "sequence [-1, 0, 1, 2]"
+ },
+ {
+  "no": 28,
+  "name": "Final Wave แจ้งเตือน",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "no": 29,
+  "name": "บอสเกิดตามกำหนด",
+  "status": "N/A",
+  "detail": "บอสอยู่ด่าน 10/15 = Phase 3 (ข้อมูลบอส Giant Zombie Kuma พร้อมใน enemies.js แล้ว)"
+ },
+ {
+  "no": 30,
+  "name": "ชนะด่านได้ (บอทเล่นด้วยการแตะ)",
+  "status": "PASS",
+  "detail": "state=won, time=130s, base=1000"
+ },
+ {
+  "no": 32,
+  "name": "รับรางวัลได้ (ทอง+EXP+ปลดล็อกตัวละคร)",
+  "status": "PASS",
+  "detail": "gold=131, owned=6"
+ },
+ {
+  "no": 33,
+  "name": "ดาวถูกบันทึก",
+  "status": "PASS",
+  "detail": "[True, True, True]"
+ },
+ {
+  "no": 34,
+  "name": "ปลดล็อกด่านถัดไปได้",
+  "status": "PASS",
+  "detail": "['T1-S1', 'T1-S2']"
+ },
+ {
+  "no": 35,
+  "name": "ปลดล็อกเมืองได้",
+  "status": "N/A",
+  "detail": "ต้องผ่าน Stage 15 (Phase 3) — โค้ดปลดล็อกเมืองอยู่ใน Battle.win()"
+ },
+ {
+  "no": "15.4",
+  "name": "ปุ่มด่านต่อไปพาไปด่าน 2",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "no": 31,
+  "name": "แพ้ด่านได้ (ไม่วางอะไรเลย)",
+  "status": "PASS",
+  "detail": "base=0"
+ },
+ {
+  "no": 49,
+  "name": "ข้อมูลไม่ถูกเพิ่มซ้ำ (เล่นซ้ำได้ทอง 30% ไม่ปลดล็อกซ้ำ)",
+  "status": "PASS",
+  "detail": "gold +61, owned 6->6"
+ },
+ {
+  "no": "B-T1-S2",
+  "name": "บอทผ่าน T1-S2",
+  "status": "PASS",
+  "detail": "state=won t=170s base=1000 lost=0 stars=[True, True, True]"
+ },
+ {
+  "no": "B-T1-S3",
+  "name": "บอทผ่าน T1-S3",
+  "status": "PASS",
+  "detail": "state=won t=189s base=1000 lost=0 stars=[True, True, True]"
+ },
+ {
+  "no": "B-T1-S4",
+  "name": "บอทผ่าน T1-S4",
+  "status": "PASS",
+  "detail": "state=won t=204s base=1000 lost=0 stars=[True, True, True]"
+ },
+ {
+  "no": "B-T1-S5",
+  "name": "บอทผ่าน T1-S5",
+  "status": "PASS",
+  "detail": "state=won t=223s base=1000 lost=0 stars=[True, True, True]"
+ },
+ {
+  "no": 46,
+  "name": "Save ได้",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "no": 47,
+  "name": "Load ได้",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "no": 48,
+  "name": "รีสตาร์ตเกมแล้วยังมีข้อมูล",
+  "status": "PASS",
+  "detail": "identical=True"
+ },
+ {
+  "no": 50,
+  "name": "การอัปเกรดและรางวัลไม่สูญหาย",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "no": "15.1",
+  "name": "ปุ่ม Continue โหลดความคืบหน้าล่าสุด",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "no": "25b",
+  "name": "ไฟล์ Save เสียหาย → โหลด Backup",
+  "status": "PASS",
+  "detail": "gold=1168"
+ },
+ {
+  "no": "21.5",
+  "name": "Version/Migration ของ Save",
+  "status": "PASS",
+  "detail": ""
+ },
+ {
+  "no": "15.16",
+  "name": "Reset Data ต้องยืนยัน 2 ครั้ง (ยกเลิกที่ขั้น 2 ไม่ลบ)",
+  "status": "PASS",
+  "detail": "รีเซ็ตข้อมูล? → ยืนยันครั้งที่ 2"
+ },
+ {
+  "no": "26",
+  "name": "ประสิทธิภาพ: ซอมบี้ 100 ตัว + กระสุนจำนวนมาก",
+  "status": "PASS",
+  "detail": "sim 0.12ms + render 1.81ms per frame (desktop CPU), zombies=100, projectiles max=25"
+ },
+ {
+  "no": 36,
+  "name": "Team Setup ทำงาน",
+  "status": "PARTIAL",
+  "detail": "จัดทีม 8 ช่องในหน้าเลือกด่าน; Presets 5 ชุด = Phase 4"
+ },
+ {
+  "no": 37,
+  "name": "Collection ทำงาน",
+  "status": "PARTIAL",
+  "detail": "หน้ารวมตัวละคร (มีเงาตัวที่ยังไม่ปลดล็อก); หน้า Detail = Phase 2"
+ },
+ {
+  "no": 38,
+  "name": "Upgrade ทำงาน",
+  "status": "N/A",
+  "detail": "Phase 2 — ปุ่มแสดงสถานะล็อก"
+ },
+ {
+  "no": 39,
+  "name": "Shop ทำงาน",
+  "status": "N/A",
+  "detail": "Phase 4 — ปุ่มแสดงสถานะล็อก"
+ },
+ {
+  "no": 40,
+  "name": "Gacha ทำงาน",
+  "status": "N/A",
+  "detail": "Phase 4 — ปุ่มแสดงสถานะล็อก"
+ },
+ {
+  "no": 41,
+  "name": "Daily Login ทำงาน",
+  "status": "N/A",
+  "detail": "Phase 4 — ปุ่มแสดงสถานะล็อก"
+ },
+ {
+  "no": 42,
+  "name": "Mission ทำงาน",
+  "status": "N/A",
+  "detail": "Phase 4 — ปุ่มแสดงสถานะล็อก"
+ },
+ {
+  "no": 43,
+  "name": "Achievement ทำงาน",
+  "status": "N/A",
+  "detail": "Phase 4 — ปุ่มแสดงสถานะล็อก"
+ },
+ {
+  "no": 44,
+  "name": "Profile ทำงาน",
+  "status": "PASS",
+  "detail": "แสดง ID/Level/EXP/สถิติจริง, เปลี่ยนชื่อได้"
+ },
+ {
+  "no": 45,
+  "name": "Settings ทำงาน",
+  "status": "PARTIAL",
+  "detail": "HP Bar/Damage Number/Auto Pause/Reset; เสียง: ไม่มีไฟล์เสียงใน Asset"
+ },
+ {
+  "no": 51,
+  "name": "Multiplayer",
+  "status": "N/A",
+  "detail": "Phase 5"
+ },
+ {
+  "no": 52,
+  "name": "Multiplayer",
+  "status": "N/A",
+  "detail": "Phase 5"
+ },
+ {
+  "no": 53,
+  "name": "Multiplayer",
+  "status": "N/A",
+  "detail": "Phase 5"
+ },
+ {
+  "no": 54,
+  "name": "Multiplayer",
+  "status": "N/A",
+  "detail": "Phase 5"
+ },
+ {
+  "no": 55,
+  "name": "Multiplayer",
+  "status": "N/A",
+  "detail": "Phase 5"
+ },
+ {
+  "no": 56,
+  "name": "Multiplayer",
+  "status": "N/A",
+  "detail": "Phase 5"
+ },
+ {
+  "no": 57,
+  "name": "Multiplayer",
+  "status": "N/A",
+  "detail": "Phase 5"
+ },
+ {
+  "no": "ERR",
+  "name": "ไม่มี JavaScript error ระหว่างทดสอบ",
+  "status": "PASS",
+  "detail": ""
+ }
+]
