@@ -9,16 +9,20 @@ SRC, OUT = sys.argv[1], sys.argv[2]
 MAX = 2048          # keep each sheet <= 2048x2048 (safe for iPad memory)
 PAD = 2
 M = json.load(open(f'{SRC}/Assets/asset_manifest.json'))
+# the game's real list of used images = data/assets.js written by build_assets.py (includes promoted ids)
+import re
+_txt = open(f'{SRC}/data/assets.js').read()
+USED = json.loads(re.search(r'RK\.Data\.assetFiles = (\{.*?\});', _txt, re.S).group(1))
+M = [dict(m, file=USED[m['id']]) for m in M if m['id'] in USED and 'Unassigned' not in USED[m['id']]] + \
+    [{'id': i, 'file': f, 'status': 'assigned'} for i, f in USED.items() if i not in {m['id'] for m in M}]
 
 # group -> which manifest entries go in it (used by the game now vs. future phases)
 def group(m):
     f = m['file']
-    if m['status'] == 'unassigned' or f.endswith('.jpg'): return None
-    if m['status'] in ('assigned-phase2', 'assigned-phase3') or f.startswith('Assets/Traps'): return 'future'
-    if m['id'].startswith('BOSS_') and m['id'] != 'BOSS_GIANT_ZOMBIE_KUMA': return 'future'
-    if m['id'] in ('ZOM_MINER', 'ZOM_CHEF_MELEE', 'ZOM_GHOST'): return 'future'
-    if f.startswith('Assets/UI') or f.startswith('Assets/Effects') or f.startswith('Assets/Donuts'): return 'ui'
-    return 'units'
+    if f.endswith('.jpg'): return None
+    if f.startswith('Assets/UI') or f.startswith('Assets/Effects') or f.startswith('Assets/Donuts') or f.startswith('Assets/Traps'): return 'ui'
+    if f.startswith('Assets/Characters'): return 'bears'
+    return 'zombies'
 
 def pack(items, name):
     items = sorted(items, key=lambda it: -it[1].height)
@@ -51,7 +55,7 @@ for g, items in groups.items():
     for n in names: sheets[n] = f'Assets/atlas/{n}.png'
 files = {}
 for m in M:
-    if m['file'].endswith('.jpg') and m['status'] != 'unassigned':
+    if m['file'].endswith('.jpg'):
         files[m['id']] = m['file']
         os.makedirs(os.path.dirname(f"{OUT}/{m['file']}"), exist_ok=True); shutil.copy(f"{SRC}/{m['file']}", f"{OUT}/{m['file']}")
 with open(f'{OUT}/data/assets.js', 'w') as fh:

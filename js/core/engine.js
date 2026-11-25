@@ -28,7 +28,8 @@
     },
 
     resize() {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const q = (RK.Save && RK.Save.data && RK.Save.data.settings.graphics) || 'high';
+      const dpr = q === 'low' ? 1 : q === 'medium' ? Math.min(window.devicePixelRatio || 1, 1.5) : Math.min(window.devicePixelRatio || 1, 2);
       const vw = window.innerWidth, vh = window.innerHeight;
       this.scale = Math.min(vw / W, vh / H);
       const cssW = Math.round(W * this.scale), cssH = Math.round(H * this.scale);
@@ -51,16 +52,16 @@
       if (type === 'down') { this.pointer.down = true; RK.Audio.unlock(); }
       if (type === 'up') this.pointer.down = false;
       if (!this.scene) return;
-      if (RK.UI.modal && type === 'down') { RK.UI.modalTap(p.x, p.y); return; }
-      if (type === 'down' && this.scene.onTap) this.scene.onTap(p.x, p.y, e);
+      if (type === 'down') { this.tap(p.x, p.y); return; }
       if (type === 'move' && this.scene.onMove) this.scene.onMove(p.x, p.y);
       if (type === 'up' && this.scene.onRelease) this.scene.onRelease(p.x, p.y);
     },
 
     // Programmatic tap (used by automated tests): same path as a real touch
     tap(x, y) {
+      this.render();                                   // make sure hit areas match what is on screen
       if (RK.UI.modal) { RK.UI.modalTap(x, y); return; }
-      if (this.scene && this.scene.onTap) this.scene.onTap(x, y, null);
+      if (this.scene && this.scene.onTap) this.scene.onTap(x, y, null); else RK.UI.tapAreas(x, y);
     },
 
     setScene(scene, args) {
@@ -96,6 +97,7 @@
       ctx.setTransform(this.pixelScale, 0, 0, this.pixelScale, 0, 0);
       ctx.imageSmoothingEnabled = true;
       ctx.clearRect(0, 0, W, H);
+      RK.UI.beginFrame();
       if (this.scene && this.scene.render) this.scene.render(ctx);
       RK.UI.render(ctx);
     }

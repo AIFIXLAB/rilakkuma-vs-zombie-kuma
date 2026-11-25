@@ -1,109 +1,207 @@
 // ===== Character Database (doc PART 6/7/8, 21.1) =====
-// Units are in CELLS (range) and SECONDS (attackSpeed = seconds between attacks, cooldown).
-// attack.pattern: single | burst | piercing | splash | melee | rapid | spray | knockback | none
+// Units: range in CELLS, attackSpeed = seconds between attacks, cooldown in seconds, cost in donuts.
+// attack.pattern: single | burst | piercing | splash | lob | melee | spray | knockback | chain | spread | beam | none
+// support: { type: buffAS | buffATK | heal | shield | produce | sweep, ... } — periodic or aura effect
+// branches: 3 upgrade branches (doc "Upgrade Branch"); one is chosen at Star 3. mods use the vocabulary in
+//   js/systems/progression.js: atk, hp, def, as (attack interval ×), range (+cells), dr (+damage reduction),
+//   reflect, stun (+chance), slow (+strength), shots (+1), splash (+radius), pierce, heal (×), shield (×), produce (×), crit
+// rarity: Common | Rare | Epic | Legend  (gacha rates in data/items.js)
 RK.Data.characters = {
-  // ---------- Producer ----------
-  FACTORY: {
-    id: 'FACTORY', name: 'Donut Factory', nameTH: 'เครื่องผลิตโดนัท', role: 'Producer', rarity: 'Common',
-    asset: 'FACTORY_LV1', description: 'ผลิตโดนัทตามเวลา ต้องแตะเก็บเอง แตะเครื่องเพื่ออัปเกรด',
-    hp: 400, atk: 0, def: 0, attackSpeed: 0, range: 0, cost: 50, cooldown: 6,
-    isFactory: true, attack: { pattern: 'none' }, skills: ['Produce Donut'], passive: '', upgradeBranch: ['Lv.1-5 in battle']
-  },
+  // ======================= PRODUCERS =======================
+  FACTORY: { id: 'FACTORY', name: 'Donut Factory', nameTH: 'เครื่องผลิตโดนัท', role: 'Producer', rarity: 'Common', asset: 'FACTORY_LV1',
+    description: 'ผลิตโดนัทตามเวลา ต้องแตะเก็บเอง · แตะเครื่องเพื่ออัปเกรด Lv1–5 ระหว่างเล่น',
+    hp: 400, atk: 0, def: 0, attackSpeed: 0, range: 0, cost: 50, cooldown: 6, isFactory: true, attack: { pattern: 'none' },
+    skill: { name: 'Fresh Batch', desc: 'ทุกเลเวลสกิล +2% โอกาสโดนัทพิเศษ' }, passive: 'ผลิตโดนัท',
+    branches: [{ name: 'Fast Oven', desc: 'ผลิตเร็วขึ้น 10%', mods: { produce: 1.1 } }, { name: 'Sturdy Oven', desc: 'HP +60%', mods: { hp: 1.6 } }, { name: 'Golden Oven', desc: 'โอกาสโดนัททอง +5%', mods: { golden: 0.05 } }] },
+  ANI_BUNNY: { id: 'ANI_BUNNY', name: 'Bunny Baker', nameTH: 'กระต่ายนักอบ', role: 'Producer', rarity: 'Rare', asset: 'ATK_ANIMAL_01',
+    description: 'ตีแป้งอบโดนัทช็อกโกแลต (มูลค่าสูง) ทุก 24 วินาที ราคาถูกแต่ HP ต่ำ',
+    hp: 260, atk: 0, def: 0, attackSpeed: 0, range: 0, cost: 75, cooldown: 14, attack: { pattern: 'none' },
+    support: { type: 'produce', interval: 24, donut: 'chocolate', first: 10 },
+    skill: { name: 'Choco Whisk', desc: 'สกิลเพิ่มความเร็วการอบ 5%/เลเวล' }, passive: 'ผลิตโดนัทช็อกโกแลต',
+    branches: [{ name: 'Double Whisk', desc: 'อบเร็วขึ้น 20%', mods: { produce: 1.2 } }, { name: 'Tough Apron', desc: 'HP ×2', mods: { hp: 2 } }, { name: 'Sweet Luck', desc: 'โอกาสโดนัทรุ้ง 15%', mods: { rainbow: 0.15 } }] },
 
-  // ---------- Defenders (doc PART 7) ----------
-  DEF_POT_SHIELD: {
-    id: 'DEF_POT_SHIELD', name: 'Pot Shield Kuma', nameTH: 'คุมะโล่หม้อ', role: 'Defender', rarity: 'Common',
-    asset: 'DEF_POT_SHIELD', description: 'แทงก์ HP สูง DEF สูง ลดดาเมจที่ได้รับ',
-    hp: 1300, atk: 0, def: 8, damageReduction: 0.20, attackSpeed: 0, range: 0, cost: 50, cooldown: 18,
-    attack: { pattern: 'none' }, skills: [], passive: 'ลด Damage 20%', upgradeBranch: ['Iron Pot', 'Golden Pot', 'Reflect Pot']
-  },
-  DEF_SPRAY: {
-    id: 'DEF_SPRAY', name: 'Spray Kuma', nameTH: 'คุมะสเปรย์', role: 'Defender', rarity: 'Common',
-    asset: 'DEF_SPRAY', description: 'ฉีดสเปรย์ลดความเร็ว มีโอกาสทำให้ศัตรูหยุดชั่วคราว',
-    hp: 520, atk: 8, def: 2, attackSpeed: 2.4, range: 2.2, cost: 75, cooldown: 10,
+  // ======================= DEFENDERS (doc PART 7) =======================
+  DEF_POT_SHIELD: { id: 'DEF_POT_SHIELD', name: 'Pot Shield Kuma', nameTH: 'คุมะโล่หม้อ', role: 'Defender', rarity: 'Common', asset: 'DEF_POT_SHIELD',
+    description: 'แทงก์ HP สูง DEF สูง ลดดาเมจที่ได้รับ 20%', hp: 1300, atk: 0, def: 8, damageReduction: 0.20, attackSpeed: 0, range: 0, cost: 50, cooldown: 18,
+    attack: { pattern: 'none' }, skill: { name: 'Lid Guard', desc: 'สกิล +4% ลดดาเมจ/เลเวล' }, passive: 'ลด Damage 20%',
+    branches: [{ name: 'Iron Pot', desc: 'HP +40%', mods: { hp: 1.4 } }, { name: 'Golden Pot', desc: 'DEF +10, ลดดาเมจ +10%', mods: { def: 10, dr: 0.1 } }, { name: 'Reflect Pot', desc: 'สะท้อน 35% ของดาเมจประชิด', mods: { reflect: 0.35 } }] },
+  DEF_SPRAY: { id: 'DEF_SPRAY', name: 'Spray Kuma', nameTH: 'คุมะสเปรย์', role: 'Defender', rarity: 'Common', asset: 'DEF_SPRAY',
+    description: 'ฉีดสเปรย์ลดความเร็ว 45% มีโอกาสทำให้หยุด 15%', hp: 520, atk: 8, def: 2, attackSpeed: 2.4, range: 2.2, cost: 75, cooldown: 10,
     attack: { pattern: 'spray', damageType: 'ice', status: { type: 'slow', strength: 0.45, duration: 3 }, stunChance: 0.15, stunDuration: 1.0 },
-    skills: ['Slow Spray'], passive: '15% Stun', upgradeBranch: ['Freeze Spray', 'Sticky Spray', 'Mega Spray']
-  },
-  DEF_CARDBOARD: {
-    id: 'DEF_CARDBOARD', name: 'Cardboard Kiiroitori', nameTH: 'คิอิโรอิโทริกล่องกระดาษ', role: 'Defender', rarity: 'Common',
-    asset: 'DEF_CARDBOARD', description: 'มีเกราะกล่อง (Armor HP) ต้องทำลายกล่องก่อน',
-    hp: 800, armorHp: 700, atk: 0, def: 4, damageReduction: 0.10, attackSpeed: 0, range: 0, cost: 100, cooldown: 22,
-    attack: { pattern: 'none' }, skills: [], passive: 'Box Armor', upgradeBranch: ['Iron Box', 'Reinforced Box', 'Fortress Box']
-  },
-  DEF_FAN: {
-    id: 'DEF_FAN', name: 'Fan Korilakkuma', nameTH: 'พัดลมโคริ', role: 'Defender', rarity: 'Rare',
-    asset: 'DEF_FAN', description: 'เป่าลมผลักซอมบี้ตัวหน้าสุดถอยหลัง มีคูลดาวน์',
-    hp: 650, atk: 10, def: 3, attackSpeed: 6, range: 2.5, cost: 100, cooldown: 16,
-    attack: { pattern: 'knockback', distance: 0.9, damageType: 'normal' }, skills: ['Gust'], passive: '', upgradeBranch: ['Strong Fan', 'Turbo Fan', 'Tornado Fan']
-  },
-  DEF_MOP_CAT: {
-    id: 'DEF_MOP_CAT', name: 'Mop Cat', nameTH: 'แมวไม้ถูพื้น', role: 'Defender', rarity: 'Common',
-    asset: 'DEF_MOP_CAT', description: 'ทำพื้นลื่นหน้าตัวเอง ซอมบี้ที่เดินผ่านช้าลง และตีด้วยไม้ถู',
-    hp: 480, atk: 16, def: 2, attackSpeed: 1.6, range: 1.15, cost: 75, cooldown: 12,
-    attack: { pattern: 'melee', damageType: 'normal' },
-    aura: { type: 'wetFloor', cellsAhead: 2, slow: 0.4 }, skills: ['Wet Floor'], passive: 'พื้นลื่น 2 ช่อง', upgradeBranch: ['Wet Floor', 'Soap Floor', 'Mega Cleaning']
-  },
-  DEF_LAUNDRY_PANDA: {
-    id: 'DEF_LAUNDRY_PANDA', name: 'Laundry Panda', nameTH: 'แพนด้าตะกร้าผ้า', role: 'Defender', rarity: 'Rare',
-    asset: 'DEF_LAUNDRY_PANDA', description: 'โล่หนัก รับดาเมจจากของขว้างลดลงครึ่งหนึ่ง',
-    hp: 1700, atk: 0, def: 6, damageReduction: 0.10, projectileReduction: 0.5, attackSpeed: 0, range: 0, cost: 125, cooldown: 24,
-    attack: { pattern: 'none' }, skills: [], passive: 'ลดดาเมจของขว้าง 50%', upgradeBranch: ['Strong Basket', 'Iron Basket', 'Mega Laundry']
-  },
+    skill: { name: 'Slow Mist', desc: 'สกิล +5% ความแรงสโลว์/เลเวล' }, passive: '15% Stun',
+    branches: [{ name: 'Freeze Spray', desc: 'โอกาส Stun +20%', mods: { stun: 0.2 } }, { name: 'Sticky Spray', desc: 'สโลว์ +20%', mods: { slow: 0.2 } }, { name: 'Mega Spray', desc: 'ระยะ +1.5 ช่อง', mods: { range: 1.5 } }] },
+  DEF_CARDBOARD: { id: 'DEF_CARDBOARD', name: 'Cardboard Kiiroitori', nameTH: 'คิอิโรอิโทริกล่องกระดาษ', role: 'Defender', rarity: 'Common', asset: 'DEF_CARDBOARD',
+    description: 'มีเกราะกล่อง (Armor HP) ต้องทำลายกล่องก่อนจึงเสีย HP', hp: 800, armorHp: 700, atk: 0, def: 4, damageReduction: 0.10, attackSpeed: 0, range: 0, cost: 100, cooldown: 22,
+    attack: { pattern: 'none' }, skill: { name: 'Box Patch', desc: 'Armor +8%/เลเวล' }, passive: 'Box Armor',
+    branches: [{ name: 'Iron Box', desc: 'Armor +60%', mods: { armor: 1.6 } }, { name: 'Reinforced Box', desc: 'HP +30% DEF +6', mods: { hp: 1.3, def: 6 } }, { name: 'Fortress Box', desc: 'ลดดาเมจ +20%', mods: { dr: 0.2 } }] },
+  DEF_FAN: { id: 'DEF_FAN', name: 'Fan Korilakkuma', nameTH: 'พัดลมโคริ', role: 'Defender', rarity: 'Rare', asset: 'DEF_FAN',
+    description: 'เป่าลมผลักซอมบี้ตัวหน้าสุดถอยหลัง ทำให้เสียจังหวะ', hp: 650, atk: 10, def: 3, attackSpeed: 6, range: 2.5, cost: 100, cooldown: 16,
+    attack: { pattern: 'knockback', distance: 0.9, damageType: 'normal' }, skill: { name: 'Gust', desc: 'ระยะผลัก +0.1 ช่อง/เลเวล' }, passive: 'Knockback',
+    branches: [{ name: 'Strong Fan', desc: 'ผลักไกล +0.6 ช่อง', mods: { knock: 0.6 } }, { name: 'Turbo Fan', desc: 'คูลดาวน์ผลัก −35%', mods: { as: 0.65 } }, { name: 'Tornado Fan', desc: 'ผลักทุกตัวในระยะ', mods: { hitAll: true } }] },
+  DEF_MOP_CAT: { id: 'DEF_MOP_CAT', name: 'Mop Cat', nameTH: 'แมวไม้ถูพื้น', role: 'Defender', rarity: 'Common', asset: 'DEF_MOP_CAT',
+    description: 'ทำพื้นลื่น 2 ช่องข้างหน้า ซอมบี้ช้าลง 40% และตีด้วยไม้ถู', hp: 480, atk: 16, def: 2, attackSpeed: 1.6, range: 1.15, cost: 75, cooldown: 12,
+    attack: { pattern: 'melee', damageType: 'normal' }, aura: { type: 'wetFloor', cellsAhead: 2, slow: 0.4 },
+    skill: { name: 'Wet Floor', desc: 'พื้นลื่นแรงขึ้น 3%/เลเวล' }, passive: 'พื้นลื่น 2 ช่อง',
+    branches: [{ name: 'Wet Floor+', desc: 'พื้นลื่น 3 ช่อง', mods: { auraCells: 1 } }, { name: 'Soap Floor', desc: 'สโลว์ +20%', mods: { slow: 0.2 } }, { name: 'Mega Cleaning', desc: 'ATK ×2', mods: { atk: 2 } }] },
+  DEF_LAUNDRY_PANDA: { id: 'DEF_LAUNDRY_PANDA', name: 'Laundry Panda', nameTH: 'แพนด้าตะกร้าผ้า', role: 'Defender', rarity: 'Rare', asset: 'DEF_LAUNDRY_PANDA',
+    description: 'โล่หนัก รับดาเมจจากของขว้างลดลงครึ่งหนึ่ง', hp: 1700, atk: 0, def: 6, damageReduction: 0.10, projectileReduction: 0.5, attackSpeed: 0, range: 0, cost: 125, cooldown: 24,
+    attack: { pattern: 'none' }, skill: { name: 'Fold Up', desc: 'HP +5%/เลเวล' }, passive: 'ลดดาเมจของขว้าง 50%',
+    branches: [{ name: 'Strong Basket', desc: 'HP +35%', mods: { hp: 1.35 } }, { name: 'Iron Basket', desc: 'DEF +12', mods: { def: 12 } }, { name: 'Mega Laundry', desc: 'ฟื้น HP 2%/วิ', mods: { regen: 0.02 } }] },
+  HW_RACKET_CAT: { id: 'HW_RACKET_CAT', name: 'Racket Cat', nameTH: 'แมวไม้แบดฝาหม้อ', role: 'Defender', rarity: 'Rare', asset: 'ATK_HOUSEWORK_06',
+    description: 'ถือฝาหม้อกันและตีกลับด้วยไม้แบด — กันได้และตีได้', hp: 950, atk: 22, def: 5, damageReduction: 0.15, attackSpeed: 1.4, range: 1.15, cost: 100, cooldown: 16,
+    attack: { pattern: 'melee', damageType: 'normal' }, skill: { name: 'Counter Smash', desc: 'สะท้อนดาเมจ +4%/เลเวล' }, passive: 'สะท้อนดาเมจ 15%', reflect: 0.15,
+    branches: [{ name: 'Steel Lid', desc: 'HP +40%', mods: { hp: 1.4 } }, { name: 'Smash Shot', desc: 'ATK ×1.8', mods: { atk: 1.8 } }, { name: 'Mirror Lid', desc: 'สะท้อน +25%', mods: { reflect: 0.25 } }] },
+  ANI_HEDGEHOG: { id: 'ANI_HEDGEHOG', name: 'Hedgehog Vac', nameTH: 'เม่นเครื่องดูดฝุ่น', role: 'Defender', rarity: 'Epic', asset: 'ATK_ANIMAL_04',
+    description: 'หนามแหลม สะท้อนดาเมจประชิด 40% และดูดฝุ่นทำให้ศัตรูหน้าตัวช้าลง', hp: 1100, atk: 0, def: 6, attackSpeed: 0, range: 0, cost: 125, cooldown: 22,
+    attack: { pattern: 'none' }, reflect: 0.4, aura: { type: 'wetFloor', cellsAhead: 1, slow: 0.25 },
+    skill: { name: 'Spike Up', desc: 'สะท้อน +5%/เลเวล' }, passive: 'Thorns 40%',
+    branches: [{ name: 'Iron Spikes', desc: 'สะท้อน +30%', mods: { reflect: 0.3 } }, { name: 'Big Bag', desc: 'HP +50%', mods: { hp: 1.5 } }, { name: 'Turbo Suction', desc: 'สโลว์ +25%', mods: { slow: 0.25 } }] },
 
-  // ---------- Attackers (Donut Shooter set, doc PART 8) ----------
-  ATK_DONUT_KUMA: {
-    id: 'ATK_DONUT_KUMA', name: 'Donut Kuma', nameTH: 'คุมะยิงโดนัท', role: 'Attacker', rarity: 'Common',
-    asset: 'ATK_DONUT_KUMA', description: 'ยิงโดนัททีละลูกตลอดแถว ตัวโจมตีพื้นฐาน',
-    hp: 300, atk: 20, def: 0, attackSpeed: 1.4, range: 9, cost: 100, cooldown: 7,
-    attack: { pattern: 'single', projectile: 'DONUT_NORMAL', projectileSpeed: 7, damageType: 'normal' },
-    skills: [], passive: '', upgradeBranch: ['Double Donut', 'Big Donut', 'Golden Donut']
-  },
-  ATK_DONUT_KORI: {
-    id: 'ATK_DONUT_KORI', name: 'Donut Korilakkuma', nameTH: 'โคริขว้างโดนัทคู่', role: 'Attacker', rarity: 'Common',
-    asset: 'ATK_DONUT_KORI', description: 'ยิงโดนัทเป็นชุด 2 ลูก (Burst)',
-    hp: 280, atk: 14, def: 0, attackSpeed: 1.7, range: 9, cost: 125, cooldown: 8,
+  // ======================= ATTACKERS — Donut Shooters =======================
+  ATK_DONUT_KUMA: { id: 'ATK_DONUT_KUMA', name: 'Donut Kuma', nameTH: 'คุมะยิงโดนัท', role: 'Attacker', rarity: 'Common', asset: 'ATK_DONUT_KUMA',
+    description: 'ยิงโดนัททีละลูกตลอดแถว ตัวโจมตีพื้นฐาน', hp: 300, atk: 20, def: 0, attackSpeed: 1.4, range: 9, cost: 100, cooldown: 7,
+    attack: { pattern: 'single', projectile: 'DONUT_NORMAL', projectileSpeed: 7, damageType: 'normal' }, kind: 'Donut Shooter',
+    skill: { name: 'Sugar Rush', desc: 'ATK +5%/เลเวล' }, passive: '',
+    branches: [{ name: 'Double Donut', desc: 'ยิงทีละ 2 ลูก', mods: { shots: 1 } }, { name: 'Big Donut', desc: 'ATK ×1.6', mods: { atk: 1.6 } }, { name: 'Golden Donut', desc: 'คริติคอล +20%', mods: { crit: 0.2 } }] },
+  ATK_DONUT_KORI: { id: 'ATK_DONUT_KORI', name: 'Donut Korilakkuma', nameTH: 'โคริขว้างโดนัทคู่', role: 'Attacker', rarity: 'Common', asset: 'ATK_DONUT_KORI',
+    description: 'ยิงโดนัทเป็นชุด 2 ลูก (Burst)', hp: 280, atk: 14, def: 0, attackSpeed: 1.7, range: 9, cost: 125, cooldown: 8, kind: 'Donut Shooter',
     attack: { pattern: 'burst', shots: 2, burstGap: 0.18, projectile: 'DONUT_NORMAL', projectileSpeed: 7.5, damageType: 'normal' },
-    skills: [], passive: '', upgradeBranch: ['Triple Burst', 'Sprinkle Burst', 'Party Burst']
-  },
-  ATK_LADLE_TORI: {
-    id: 'ATK_LADLE_TORI', name: 'Ladle Kiiroitori', nameTH: 'คิอิโรอิโทริทัพพี', role: 'Attacker', rarity: 'Common',
-    asset: 'ATK_LADLE_TORI', description: 'ราคาถูก ตีระยะประชิดเร็ว ไว้ปิดแถวฉุกเฉิน',
-    hp: 260, atk: 30, def: 1, attackSpeed: 0.9, range: 1.15, cost: 75, cooldown: 6,
-    attack: { pattern: 'melee', damageType: 'normal' }, skills: [], passive: '', upgradeBranch: ['Steel Ladle', 'Hot Ladle', 'Mega Ladle']
-  },
-  ATK_ROLLINGPIN_CHEF: {
-    id: 'ATK_ROLLINGPIN_CHEF', name: 'Rolling Pin Chef', nameTH: 'เชฟไม้นวดแป้ง', role: 'Attacker', rarity: 'Rare',
-    asset: 'ATK_ROLLINGPIN_CHEF', description: 'ฟาดไม้นวดแป้งโดนทุกตัวในช่องหน้า ดาเมจหนัก',
-    hp: 520, atk: 70, def: 3, attackSpeed: 1.9, range: 1.3, cost: 150, cooldown: 14,
-    attack: { pattern: 'melee', hitAll: true, damageType: 'heavy' }, skills: [], passive: 'โจมตีทุกตัวในระยะ', upgradeBranch: ['Iron Pin', 'Spin Pin', 'Giant Pin']
-  },
-  ATK_DONUT_CANNON: {
-    id: 'ATK_DONUT_CANNON', name: 'Donut Cannon Kuma', nameTH: 'คุมะปืนใหญ่โดนัท', role: 'Attacker', rarity: 'Rare',
-    asset: 'ATK_DONUT_CANNON', description: 'ยิงโดนัทระเบิด (Splash) แรงแต่ช้า',
-    hp: 340, atk: 48, def: 0, attackSpeed: 3.0, range: 9, cost: 200, cooldown: 18,
+    skill: { name: 'Party Mix', desc: 'ATK +5%/เลเวล' }, passive: '',
+    branches: [{ name: 'Triple Burst', desc: 'ชุดละ 3 ลูก', mods: { shots: 1 } }, { name: 'Sprinkle Burst', desc: 'ยิงเร็วขึ้น 25%', mods: { as: 0.75 } }, { name: 'Party Burst', desc: 'ATK ×1.5', mods: { atk: 1.5 } }] },
+  ATK_LADLE_TORI: { id: 'ATK_LADLE_TORI', name: 'Ladle Kiiroitori', nameTH: 'คิอิโรอิโทริทัพพี', role: 'Attacker', rarity: 'Common', asset: 'ATK_LADLE_TORI',
+    description: 'ราคาถูก ตีระยะประชิดเร็ว ไว้ปิดแถวฉุกเฉิน', hp: 260, atk: 30, def: 1, attackSpeed: 0.9, range: 1.15, cost: 75, cooldown: 6, kind: 'Rapid Attacker',
+    attack: { pattern: 'melee', damageType: 'normal' }, skill: { name: 'Hot Soup', desc: 'ATK +6%/เลเวล' }, passive: '',
+    branches: [{ name: 'Steel Ladle', desc: 'HP ×1.8', mods: { hp: 1.8 } }, { name: 'Hot Ladle', desc: 'ติด Burn', mods: { burn: 8 } }, { name: 'Mega Ladle', desc: 'ATK ×1.7', mods: { atk: 1.7 } }] },
+  ATK_ROLLINGPIN_CHEF: { id: 'ATK_ROLLINGPIN_CHEF', name: 'Rolling Pin Chef', nameTH: 'เชฟไม้นวดแป้ง', role: 'Attacker', rarity: 'Rare', asset: 'ATK_ROLLINGPIN_CHEF',
+    description: 'ฟาดไม้นวดแป้งโดนทุกตัวในช่องหน้า ดาเมจหนัก', hp: 520, atk: 70, def: 3, attackSpeed: 1.9, range: 1.3, cost: 150, cooldown: 14, kind: 'Heavy Attacker',
+    attack: { pattern: 'melee', hitAll: true, damageType: 'heavy' }, skill: { name: 'Knead', desc: 'ATK +5%/เลเวล' }, passive: 'โจมตีทุกตัวในระยะ',
+    branches: [{ name: 'Iron Pin', desc: 'HP +60%', mods: { hp: 1.6 } }, { name: 'Spin Pin', desc: 'ตีเร็วขึ้น 30%', mods: { as: 0.7 } }, { name: 'Giant Pin', desc: 'ระยะ +1 ช่อง', mods: { range: 1 } }] },
+  ATK_DONUT_CANNON: { id: 'ATK_DONUT_CANNON', name: 'Donut Cannon Kuma', nameTH: 'คุมะปืนใหญ่โดนัท', role: 'Attacker', rarity: 'Rare', asset: 'ATK_DONUT_CANNON',
+    description: 'ยิงโดนัทระเบิด (Splash) แรงแต่ช้า', hp: 340, atk: 48, def: 0, attackSpeed: 3.0, range: 9, cost: 200, cooldown: 18, kind: 'Heavy Attacker',
     attack: { pattern: 'splash', splashRadius: 0.9, projectile: 'DONUT_NORMAL', projectileSpeed: 5.5, projectileScale: 1.5, damageType: 'heavy' },
-    skills: [], passive: '', upgradeBranch: ['Mega Cannon', 'Cluster Cannon', 'Rainbow Cannon']
-  },
-  ATK_GOGGLE_CAT: {
-    id: 'ATK_GOGGLE_CAT', name: 'Goggle Cat Blaster', nameTH: 'แมวแว่นยิงรัว', role: 'Attacker', rarity: 'Rare',
-    asset: 'ATK_GOGGLE_CAT', description: 'ยิงรัวเร็วมาก ดาเมจต่อนัดต่ำ ระยะ 6 ช่อง',
-    hp: 260, atk: 9, def: 0, attackSpeed: 0.45, range: 6, cost: 175, cooldown: 14,
+    skill: { name: 'Big Boom', desc: 'รัศมีระเบิด +4%/เลเวล' }, passive: 'Splash',
+    branches: [{ name: 'Mega Cannon', desc: 'ATK ×1.5', mods: { atk: 1.5 } }, { name: 'Cluster Cannon', desc: 'รัศมี +0.6', mods: { splash: 0.6 } }, { name: 'Rainbow Cannon', desc: 'ยิงเร็วขึ้น 30%', mods: { as: 0.7 } }] },
+  ATK_GOGGLE_CAT: { id: 'ATK_GOGGLE_CAT', name: 'Goggle Cat Blaster', nameTH: 'แมวแว่นยิงรัว', role: 'Attacker', rarity: 'Rare', asset: 'ATK_GOGGLE_CAT',
+    description: 'ยิงรัวเร็วมาก ดาเมจต่อนัดต่ำ ระยะ 6 ช่อง', hp: 260, atk: 9, def: 0, attackSpeed: 0.45, range: 6, cost: 175, cooldown: 14, kind: 'Rapid Attacker',
     attack: { pattern: 'single', projectile: 'DONUT_NORMAL', projectileSpeed: 9, projectileScale: 0.6, damageType: 'normal' },
-    skills: [], passive: '', upgradeBranch: ['Turbo Blaster', 'Sprinkle Gun', 'Donut Gatling']
-  },
-  ATK_UMBRELLA_PANDA: {
-    id: 'ATK_UMBRELLA_PANDA', name: 'Umbrella Panda', nameTH: 'แพนด้าร่มโดนัท', role: 'Attacker', rarity: 'Rare',
-    asset: 'ATK_UMBRELLA_PANDA', description: 'โดนัททะลุ (Piercing) โดนทุกตัวในแถว',
-    hp: 400, atk: 18, def: 2, attackSpeed: 2.0, range: 9, cost: 150, cooldown: 12,
+    skill: { name: 'Lock On', desc: 'ATK +5%/เลเวล' }, passive: '',
+    branches: [{ name: 'Turbo Blaster', desc: 'ยิงเร็วขึ้น 25%', mods: { as: 0.75 } }, { name: 'Sprinkle Gun', desc: 'ระยะ +3', mods: { range: 3 } }, { name: 'Donut Gatling', desc: 'ATK ×1.5', mods: { atk: 1.5 } }] },
+  ATK_UMBRELLA_PANDA: { id: 'ATK_UMBRELLA_PANDA', name: 'Umbrella Panda', nameTH: 'แพนด้าร่มโดนัท', role: 'Attacker', rarity: 'Rare', asset: 'ATK_UMBRELLA_PANDA',
+    description: 'โดนัททะลุ (Piercing) โดนทุกตัวในแถว', hp: 400, atk: 18, def: 2, attackSpeed: 2.0, range: 9, cost: 150, cooldown: 12, kind: 'Projectile Shooter',
     attack: { pattern: 'piercing', projectile: 'DONUT_NORMAL', projectileSpeed: 6, damageType: 'normal' },
-    skills: [], passive: 'ยิงทะลุ', upgradeBranch: ['Wide Umbrella', 'Spin Umbrella', 'Storm Umbrella']
-  },
-  ATK_CHOCO_KUMA: {
-    id: 'ATK_CHOCO_KUMA', name: 'Choco Kuma', nameTH: 'คุมะช็อกโก', role: 'Attacker', rarity: 'Epic',
-    asset: 'ATK_CHOCO_KUMA', description: 'โดนัทช็อกโกเวทมนตร์ ไม่สน DEF และทำให้ช้าลง',
-    hp: 300, atk: 15, def: 0, attackSpeed: 1.5, range: 9, cost: 175, cooldown: 14,
-    attack: { pattern: 'single', projectile: 'DONUT_NORMAL', projectileSpeed: 7, projectileTint: 'choco', damageType: 'magic', ignoreDef: true,
-              status: { type: 'slow', strength: 0.3, duration: 2 } },
-    skills: [], passive: 'Magic: ignore DEF', upgradeBranch: ['Dark Choco', 'Choco Rain', 'Choco Fountain']
-  }
+    skill: { name: 'Rain Dance', desc: 'ATK +5%/เลเวล' }, passive: 'ยิงทะลุ',
+    branches: [{ name: 'Wide Umbrella', desc: 'HP ×1.6', mods: { hp: 1.6 } }, { name: 'Spin Umbrella', desc: 'ยิงเร็วขึ้น 25%', mods: { as: 0.75 } }, { name: 'Storm Umbrella', desc: 'ATK ×1.5', mods: { atk: 1.5 } }] },
+  ATK_CHOCO_KUMA: { id: 'ATK_CHOCO_KUMA', name: 'Choco Kuma', nameTH: 'คุมะช็อกโก', role: 'Attacker', rarity: 'Epic', asset: 'ATK_CHOCO_KUMA',
+    description: 'โดนัทช็อกโกเวทมนตร์ ไม่สน DEF และทำให้ช้าลง', hp: 300, atk: 15, def: 0, attackSpeed: 1.5, range: 9, cost: 175, cooldown: 14, kind: 'Magic Attacker',
+    attack: { pattern: 'single', projectile: 'DONUT_NORMAL', projectileSpeed: 7, projectileTint: 'choco', damageType: 'magic', ignoreDef: true, status: { type: 'slow', strength: 0.3, duration: 2 } },
+    skill: { name: 'Melt', desc: 'สโลว์ +4%/เลเวล' }, passive: 'Magic: ignore DEF',
+    branches: [{ name: 'Dark Choco', desc: 'ATK ×1.6', mods: { atk: 1.6 } }, { name: 'Choco Rain', desc: 'ยิงทีละ 2', mods: { shots: 1 } }, { name: 'Choco Fountain', desc: 'สโลว์ +25%', mods: { slow: 0.25 } }] },
+
+  // ======================= ATTACKERS — Housework Assault Squad =======================
+  HW_ROLLER_KUMA: { id: 'HW_ROLLER_KUMA', name: 'Roller Kuma', nameTH: 'คุมะลูกกลิ้งทาสี', role: 'Attacker', rarity: 'Rare', asset: 'ATK_HOUSEWORK_01',
+    description: 'หมวกหม้อ + ลูกกลิ้ง กลิ้งทับทุกตัวในระยะ 1.5 ช่อง ทนทาน', hp: 700, atk: 40, def: 4, attackSpeed: 1.6, range: 1.5, cost: 150, cooldown: 14, kind: 'Heavy Attacker',
+    attack: { pattern: 'melee', hitAll: true, damageType: 'heavy' }, skill: { name: 'Fresh Coat', desc: 'ATK +5%/เลเวล' }, passive: 'โจมตีหมู่',
+    branches: [{ name: 'Wide Roller', desc: 'ระยะ +1', mods: { range: 1 } }, { name: 'Pot Helmet+', desc: 'HP ×1.6', mods: { hp: 1.6 } }, { name: 'Speed Roll', desc: 'ตีเร็วขึ้น 30%', mods: { as: 0.7 } }] },
+  HW_PLUNGER_KORI: { id: 'HW_PLUNGER_KORI', name: 'Plunger Kori', nameTH: 'โคริยิงที่ปั๊มน้ำ', role: 'Attacker', rarity: 'Common', asset: 'ATK_HOUSEWORK_02',
+    description: 'ยิงที่ปั๊มดูดติดหน้าซอมบี้ ทำให้หยุด 0.6 วินาที', hp: 300, atk: 16, def: 0, attackSpeed: 2.0, range: 7, cost: 125, cooldown: 10, kind: 'Toy Shooter',
+    attack: { pattern: 'single', projectile: 'DONUT_NORMAL', projectileSpeed: 7, projectileTint: 'red', damageType: 'normal', status: { type: 'stun', strength: 1, duration: 0.6 } },
+    skill: { name: 'Suction', desc: 'เวลาหยุด +0.08 วิ/เลเวล' }, passive: 'Stun 0.6s',
+    branches: [{ name: 'Mega Suction', desc: 'ATK ×1.5', mods: { atk: 1.5 } }, { name: 'Quick Pump', desc: 'ยิงเร็วขึ้น 25%', mods: { as: 0.75 } }, { name: 'Long Reach', desc: 'ระยะ +2', mods: { range: 2 } }] },
+  HW_VACUUM_TORI: { id: 'HW_VACUUM_TORI', name: 'Vacuum Tori', nameTH: 'คิอิโรอิโทริเครื่องดูดฝุ่น', role: 'Attacker', rarity: 'Rare', asset: 'ATK_HOUSEWORK_03',
+    description: 'ดูดต่อเนื่อง (Continuous) โดนทุกตัวในระยะ 3 ช่อง และดึงศัตรูให้ช้าลง', hp: 360, atk: 6, def: 1, attackSpeed: 0.35, range: 3, cost: 150, cooldown: 12, kind: 'Continuous',
+    attack: { pattern: 'beam', damageType: 'normal', status: { type: 'slow', strength: 0.25, duration: 0.6 } }, skill: { name: 'Max Power', desc: 'ATK +5%/เลเวล' }, passive: 'Continuous',
+    branches: [{ name: 'Cyclone Vac', desc: 'ระยะ +1.5', mods: { range: 1.5 } }, { name: 'Turbo Vac', desc: 'ATK ×1.6', mods: { atk: 1.6 } }, { name: 'Big Bag', desc: 'สโลว์ +25%', mods: { slow: 0.25 } }] },
+  HW_ZAPPER_KUMA: { id: 'HW_ZAPPER_KUMA', name: 'Zapper Kuma', nameTH: 'คุมะไม้ช็อตยุง', role: 'Attacker', rarity: 'Epic', asset: 'ATK_HOUSEWORK_04',
+    description: 'สายฟ้ากระโดด (Multi Target) โดนเป้าหมายแล้วกระโดดไปอีก 2 ตัวรอบข้าง', hp: 320, atk: 28, def: 0, attackSpeed: 1.8, range: 6, cost: 200, cooldown: 16, kind: 'Magic Attacker',
+    attack: { pattern: 'chain', jumps: 2, damageType: 'magic', ignoreDef: true }, skill: { name: 'Overcharge', desc: 'ATK +5%/เลเวล' }, passive: 'Chain Lightning',
+    branches: [{ name: 'Storm', desc: 'กระโดด +2 ตัว', mods: { jumps: 2 } }, { name: 'Shock', desc: 'โอกาส Stun 25%', mods: { stun: 0.25 } }, { name: 'High Voltage', desc: 'ATK ×1.6', mods: { atk: 1.6 } }] },
+  HW_LEAF_PENGUIN: { id: 'HW_LEAF_PENGUIN', name: 'Leaf Blower Penguin', nameTH: 'เพนกวินเป่าใบไม้', role: 'Attacker', rarity: 'Rare', asset: 'ATK_HOUSEWORK_05',
+    description: 'เป่าใบไม้ 3 แถวพร้อมกัน (แถวตัวเอง + บน + ล่าง)', hp: 300, atk: 13, def: 0, attackSpeed: 1.8, range: 7, cost: 175, cooldown: 14, kind: 'Nature Attacker',
+    attack: { pattern: 'spread', projectile: 'DONUT_NORMAL', projectileTint: 'green', projectileScale: 0.8, projectileSpeed: 6.5, damageType: 'normal' },
+    skill: { name: 'Gale', desc: 'ATK +5%/เลเวล' }, passive: 'ยิง 3 แถว',
+    branches: [{ name: 'Big Leaf', desc: 'ATK ×1.5', mods: { atk: 1.5 } }, { name: 'Gust Leaf', desc: 'ยิงเร็วขึ้น 25%', mods: { as: 0.75 } }, { name: 'Pollen', desc: 'สโลว์ 30%', mods: { slow: 0.3 } }] },
+  HW_HOSE_BEAR: { id: 'HW_HOSE_BEAR', name: 'Hose Bear', nameTH: 'หมีฟ้าสายยาง', role: 'Attacker', rarity: 'Rare', asset: 'ATK_HOUSEWORK_07',
+    description: 'ฉีดน้ำเย็นต่อเนื่องระยะ 4 ช่อง ทำให้ช้าลง (Ice)', hp: 340, atk: 7, def: 0, attackSpeed: 0.4, range: 4, cost: 150, cooldown: 12, kind: 'Continuous',
+    attack: { pattern: 'beam', damageType: 'ice', status: { type: 'slow', strength: 0.35, duration: 1.2 } }, skill: { name: 'Cold Water', desc: 'สโลว์ +3%/เลเวล' }, passive: 'Ice',
+    branches: [{ name: 'Ice Hose', desc: 'โอกาส Freeze 10%', mods: { stun: 0.1 } }, { name: 'Long Hose', desc: 'ระยะ +2', mods: { range: 2 } }, { name: 'Power Wash', desc: 'ATK ×1.6', mods: { atk: 1.6 } }] },
+  HW_WOK_PANDA: { id: 'HW_WOK_PANDA', name: 'Wok Panda', nameTH: 'แพนด้ากระทะไฟ', role: 'Attacker', rarity: 'Epic', asset: 'ATK_HOUSEWORK_08',
+    description: 'ขว้างผัดร้อนระเบิด (Explosive) ติด Burn', hp: 380, atk: 38, def: 1, attackSpeed: 2.6, range: 8, cost: 200, cooldown: 16, kind: 'Explosive',
+    attack: { pattern: 'lob', splashRadius: 0.8, projectile: 'DONUT_NORMAL', projectileTint: 'fire', projectileSpeed: 5, damageType: 'heavy', status: { type: 'burn', strength: 8, duration: 4 } },
+    skill: { name: 'Wok Hei', desc: 'Burn +2/เลเวล' }, passive: 'Burn',
+    branches: [{ name: 'Inferno Wok', desc: 'Burn ×2', mods: { burnMul: 2 } }, { name: 'Big Wok', desc: 'รัศมี +0.5', mods: { splash: 0.5 } }, { name: 'Quick Stir', desc: 'ยิงเร็วขึ้น 25%', mods: { as: 0.75 } }] },
+
+  // ======================= Kitchen Army (pixel set) =======================
+  KT_PAN_KUMA: { id: 'KT_PAN_KUMA', name: 'Pan Kuma', nameTH: 'คุมะกระทะเหล็ก', role: 'Attacker', rarity: 'Common', asset: 'ATK_KITCHEN_01',
+    description: 'ฟาดกระทะ มีโอกาสทำให้มึน 25%', hp: 520, atk: 34, def: 3, attackSpeed: 1.5, range: 1.15, cost: 100, cooldown: 9, kind: 'Heavy Attacker',
+    attack: { pattern: 'melee', damageType: 'normal', stunChance: 0.25, stunDuration: 0.8 }, skill: { name: 'Bonk', desc: 'โอกาสมึน +3%/เลเวล' }, passive: 'Stun 25%',
+    branches: [{ name: 'Cast Iron', desc: 'HP ×1.7', mods: { hp: 1.7 } }, { name: 'Double Bonk', desc: 'ATK ×1.6', mods: { atk: 1.6 } }, { name: 'Dizzy Pan', desc: 'มึน +20%', mods: { stun: 0.2 } }] },
+  KT_DUSTER_KORI: { id: 'KT_DUSTER_KORI', name: 'Duster Kori', nameTH: 'โคริไม้ปัดฝุ่น', role: 'Support', rarity: 'Rare', asset: 'ATK_KITCHEN_02',
+    description: 'ปัดฝุ่นให้เพื่อนรอบตัว (3×3) โจมตีเร็วขึ้น 20%', hp: 320, atk: 0, def: 1, attackSpeed: 0, range: 0, cost: 100, cooldown: 14,
+    attack: { pattern: 'none' }, support: { type: 'buffAS', radius: 1, amount: 0.2 }, skill: { name: 'Tidy Up', desc: 'บัฟ +2%/เลเวล' }, passive: 'Attack Speed +20% (3×3)',
+    branches: [{ name: 'Big Duster', desc: 'รัศมี 5×5', mods: { radius: 1 } }, { name: 'Speed Dust', desc: 'บัฟ +15%', mods: { buff: 0.15 } }, { name: 'Sturdy', desc: 'HP ×2', mods: { hp: 2 } }] },
+  KT_WHISK_TORI: { id: 'KT_WHISK_TORI', name: 'Whisk Tori', nameTH: 'คิอิโรอิโทริตะกร้อตีไข่', role: 'Attacker', rarity: 'Common', asset: 'ATK_KITCHEN_03',
+    description: 'ยิงฟองไข่รัวเร็ว ระยะ 4 ช่อง ราคาถูก', hp: 240, atk: 8, def: 0, attackSpeed: 0.6, range: 4, cost: 100, cooldown: 8, kind: 'Rapid Attacker',
+    attack: { pattern: 'single', projectile: 'DONUT_NORMAL', projectileSpeed: 8, projectileScale: 0.55, projectileTint: 'cream', damageType: 'normal' },
+    skill: { name: 'Fluffy', desc: 'ATK +5%/เลเวล' }, passive: '',
+    branches: [{ name: 'Electric Whisk', desc: 'ยิงเร็วขึ้น 30%', mods: { as: 0.7 } }, { name: 'Long Whisk', desc: 'ระยะ +3', mods: { range: 3 } }, { name: 'Meringue', desc: 'ATK ×1.6', mods: { atk: 1.6 } }] },
+  KT_BROOM_KUMA: { id: 'KT_BROOM_KUMA', name: 'Broom Kuma', nameTH: 'คุมะไม้กวาด', role: 'Special', rarity: 'Rare', asset: 'ATK_KITCHEN_04',
+    description: 'ทุก 7 วิ กวาดผลักซอมบี้ทุกตัวใน 2 ช่องข้างหน้าถอยไป 1 ช่อง', hp: 450, atk: 12, def: 2, attackSpeed: 0, range: 0, cost: 125, cooldown: 16,
+    attack: { pattern: 'none' }, support: { type: 'sweep', interval: 7, cells: 2, push: 1.0 }, skill: { name: 'Clean Sweep', desc: 'ผลัก +0.08/เลเวล' }, passive: 'Area Knockback',
+    branches: [{ name: 'Fast Sweep', desc: 'ทุก 5 วิ', mods: { as: 0.7 } }, { name: 'Wide Sweep', desc: 'ระยะ +1 ช่อง', mods: { range: 1 } }, { name: 'Dust Cloud', desc: 'ผลักแล้วมึน 1 วิ', mods: { stun: 1 } }] },
+  KT_SPRAY_DUCK: { id: 'KT_SPRAY_DUCK', name: 'Spray Duck', nameTH: 'เป็ดห่วงยางฟอกกี้', role: 'Support', rarity: 'Rare', asset: 'ATK_KITCHEN_05',
+    description: 'ฉีดน้ำฟื้น HP 60 ให้เพื่อนที่ HP น้อยสุดในรัศมี 3×3 ทุก 3 วิ', hp: 300, atk: 0, def: 1, attackSpeed: 0, range: 0, cost: 125, cooldown: 16,
+    attack: { pattern: 'none' }, support: { type: 'heal', radius: 1, amount: 60, interval: 3 }, skill: { name: 'Fresh Mist', desc: 'ฟื้นฟู +6%/เลเวล' }, passive: 'Heal',
+    branches: [{ name: 'Mega Mist', desc: 'ฟื้น ×1.6', mods: { heal: 1.6 } }, { name: 'Wide Mist', desc: 'รัศมี 5×5', mods: { radius: 1 } }, { name: 'Regen Mist', desc: 'ทุก 2 วิ', mods: { as: 0.67 } }] },
+  KT_SPATULA_CAT: { id: 'KT_SPATULA_CAT', name: 'Spatula Cat', nameTH: 'แมวตะหลิวฝาหม้อ', role: 'Support', rarity: 'Rare', asset: 'ATK_KITCHEN_06',
+    description: 'แจกโล่ (Shield) 120 ให้เพื่อนรอบตัว 3×3 ทุก 9 วิ', hp: 420, atk: 0, def: 3, attackSpeed: 0, range: 0, cost: 125, cooldown: 18,
+    attack: { pattern: 'none' }, support: { type: 'shield', radius: 1, amount: 120, interval: 9 }, skill: { name: 'Lid Up', desc: 'โล่ +6%/เลเวล' }, passive: 'Shield',
+    branches: [{ name: 'Iron Lid', desc: 'โล่ ×1.6', mods: { shield: 1.6 } }, { name: 'Quick Lid', desc: 'ทุก 6 วิ', mods: { as: 0.67 } }, { name: 'Big Lid', desc: 'รัศมี 5×5', mods: { radius: 1 } }] },
+  KT_YARN_BEAR: { id: 'KT_YARN_BEAR', name: 'Yarn Bear', nameTH: 'หมีฟ้าไหมพรม', role: 'Special', rarity: 'Epic', asset: 'ATK_KITCHEN_07',
+    description: 'ขว้างไหมพรมพันตัว ทำให้ซอมบี้ทั้งกลุ่ม (รัศมี 0.8) หยุด 1.5 วิ', hp: 360, atk: 14, def: 1, attackSpeed: 4.5, range: 8, cost: 175, cooldown: 18, kind: 'Control',
+    attack: { pattern: 'lob', splashRadius: 0.8, projectile: 'DONUT_NORMAL', projectileTint: 'blue', projectileSpeed: 5, damageType: 'normal', status: { type: 'stun', strength: 1, duration: 1.5 } },
+    skill: { name: 'Tangle', desc: 'เวลาหยุด +0.1/เลเวล' }, passive: 'Area Stun',
+    branches: [{ name: 'Big Ball', desc: 'รัศมี +0.5', mods: { splash: 0.5 } }, { name: 'Fast Knit', desc: 'ขว้างเร็วขึ้น 30%', mods: { as: 0.7 } }, { name: 'Wool Wrap', desc: 'หยุดนาน +1 วิ', mods: { stunDur: 1 } }] },
+  KT_SWATTER_PANDA: { id: 'KT_SWATTER_PANDA', name: 'Swatter Panda', nameTH: 'แพนด้าไม้ตียุง', role: 'Attacker', rarity: 'Rare', asset: 'ATK_KITCHEN_08',
+    description: 'ปราบซอมบี้บิน — ดาเมจ ×2.5 ใส่ศัตรูที่บินได้ ระยะ 6', hp: 320, atk: 20, def: 0, attackSpeed: 1.2, range: 6, cost: 150, cooldown: 12, kind: 'Projectile Shooter',
+    attack: { pattern: 'single', projectile: 'DONUT_NORMAL', projectileSpeed: 9, projectileTint: 'pink', projectileScale: 0.7, damageType: 'normal', antiAir: 2.5 },
+    skill: { name: 'Fly Swat', desc: 'ATK +5%/เลเวล' }, passive: 'Anti-Air ×2.5',
+    branches: [{ name: 'Sky Swat', desc: 'Anti-Air ×4', mods: { antiAir: 1.5 } }, { name: 'Quick Swat', desc: 'ยิงเร็วขึ้น 25%', mods: { as: 0.75 } }, { name: 'Bamboo Hat', desc: 'HP ×1.8', mods: { hp: 1.8 } }] },
+
+  // ======================= Animal Housework Warriors =======================
+  ANI_ELEPHANT: { id: 'ANI_ELEPHANT', name: 'Plunger Elephant', nameTH: 'ช้างที่ปั๊มน้ำ', role: 'Attacker', rarity: 'Epic', asset: 'ATK_ANIMAL_02',
+    description: 'ยิงที่ปั๊มยักษ์ ดาเมจหนักมาก ผลักถอยและ HP สูง แต่ยิงช้า', hp: 800, atk: 95, def: 4, attackSpeed: 3.6, range: 9, cost: 250, cooldown: 22, kind: 'Heavy Attacker',
+    attack: { pattern: 'single', projectile: 'DONUT_NORMAL', projectileScale: 1.6, projectileTint: 'red', projectileSpeed: 5, damageType: 'heavy', knock: 0.5 },
+    skill: { name: 'Trunk Blast', desc: 'ATK +5%/เลเวล' }, passive: 'Knockback shot',
+    branches: [{ name: 'Mega Plunger', desc: 'ATK ×1.5', mods: { atk: 1.5 } }, { name: 'Rapid Pump', desc: 'ยิงเร็วขึ้น 30%', mods: { as: 0.7 } }, { name: 'Pierce Plunger', desc: 'ยิงทะลุ', mods: { pierce: true } }] },
+  ANI_FOX: { id: 'ANI_FOX', name: 'Fox Splasher', nameTH: 'จิ้งจอกปืนฉีดน้ำ', role: 'Attacker', rarity: 'Rare', asset: 'ATK_ANIMAL_03',
+    description: 'ยิงน้ำทะลุทั้งแถว (Piercing) ยิงเร็ว', hp: 300, atk: 14, def: 0, attackSpeed: 1.2, range: 9, cost: 150, cooldown: 12, kind: 'Projectile Shooter',
+    attack: { pattern: 'piercing', projectile: 'DONUT_NORMAL', projectileTint: 'blue', projectileScale: 0.7, projectileSpeed: 8, damageType: 'ice' },
+    skill: { name: 'Splash Dash', desc: 'ATK +5%/เลเวล' }, passive: 'Piercing',
+    branches: [{ name: 'Pressure Gun', desc: 'ATK ×1.5', mods: { atk: 1.5 } }, { name: 'Twin Tank', desc: 'ยิงทีละ 2', mods: { shots: 1 } }, { name: 'Cold Water', desc: 'สโลว์ 25%', mods: { slow: 0.25 } }] },
+  ANI_PENGUIN_CHEF: { id: 'ANI_PENGUIN_CHEF', name: 'Penguin Chef', nameTH: 'เพนกวินเชฟ', role: 'Attacker', rarity: 'Common', asset: 'ATK_ANIMAL_05',
+    description: 'โยนแพนเค้กโค้งข้ามหัว ระเบิดเล็ก (Food Thrower)', hp: 300, atk: 26, def: 0, attackSpeed: 2.2, range: 8, cost: 125, cooldown: 10, kind: 'Food Thrower',
+    attack: { pattern: 'lob', splashRadius: 0.55, projectile: 'DONUT_NORMAL', projectileTint: 'cream', projectileSpeed: 5.5, damageType: 'normal' },
+    skill: { name: 'Flip!', desc: 'ATK +5%/เลเวล' }, passive: 'Lob',
+    branches: [{ name: 'Stack', desc: 'ATK ×1.5', mods: { atk: 1.5 } }, { name: 'Hot Pan', desc: 'ติด Burn', mods: { burn: 6 } }, { name: 'Quick Flip', desc: 'ยิงเร็วขึ้น 25%', mods: { as: 0.75 } }] },
+  ANI_DEER: { id: 'ANI_DEER', name: 'Dryer Deer', nameTH: 'กวางไดร์เป่าผม', role: 'Special', rarity: 'Legend', asset: 'ATK_ANIMAL_06',
+    description: 'เป่าลมร้อนต่อเนื่องทั้งแถวระยะ 5 ช่อง ติด Burn และผลักเบา ๆ', hp: 420, atk: 10, def: 1, attackSpeed: 0.3, range: 5, cost: 225, cooldown: 20, kind: 'Continuous',
+    attack: { pattern: 'beam', damageType: 'heavy', status: { type: 'burn', strength: 5, duration: 2 }, push: 0.06 },
+    skill: { name: 'Heat Wave', desc: 'ATK +5%/เลเวล' }, passive: 'Burn + Push',
+    branches: [{ name: 'Turbo Dryer', desc: 'ATK ×1.5', mods: { atk: 1.5 } }, { name: 'Long Nozzle', desc: 'ระยะ +2', mods: { range: 2 } }, { name: 'Gale Dryer', desc: 'ผลัก ×2.5', mods: { pushMul: 2.5 } }] }
 };
+
+// Characters the player owns on a fresh save
+RK.Data.startingCharacters = ['FACTORY', 'ATK_DONUT_KUMA', 'DEF_POT_SHIELD', 'ATK_LADLE_TORI'];
+RK.Data.maxDeck = 8;          // team slots besides the factory (doc 15.5)
+
+// Playable Zombie roster for VS Mode (Player 2). brain = Brain Energy cost, cd = deploy cooldown
+RK.Data.vsZombies = {
+  ZOM_NORMAL: { brain: 50, cd: 4 }, ZOM_NURSE: { brain: 60, cd: 6 }, ZOM_CONE: { brain: 75, cd: 7 }, ZOM_BUCKET: { brain: 100, cd: 10 },
+  ZOM_HEAVY: { brain: 175, cd: 18 }, RZ_ROCK: { brain: 75, cd: 8 }, RZ_BUILDER: { brain: 100, cd: 10 }, RZ_CHEF: { brain: 100, cd: 10 },
+  RZ_FARMER: { brain: 100, cd: 10 }, RZ_TRASH: { brain: 100, cd: 10 }, RZ_TOXIC: { brain: 125, cd: 12 }, ZOM_NINJA: { brain: 100, cd: 10 },
+  ZOM_GHOST: { brain: 100, cd: 10 }, ZOM_SAMURAI: { brain: 150, cd: 14 }, ZOM_SAKURA: { brain: 125, cd: 14 }, ZOM_CRAB: { brain: 125, cd: 12 },
+  ZOM_SURFER: { brain: 100, cd: 10 }, ZOM_PHARAOH: { brain: 175, cd: 18 }, ZOM_SCIENTIST: { brain: 125, cd: 12 }, ZOM_FLYING: { brain: 125, cd: 12 },
+  ZOM_FROZEN_KNIGHT: { brain: 175, cd: 16 }, ZOM_FIRE: { brain: 125, cd: 12 }, ZOM_SAND: { brain: 125, cd: 12 }, ZOM_ANGEL: { brain: 150, cd: 14 },
+  BOSS_GIANT_ZOMBIE_KUMA: { brain: 500, cd: 60, boss: true }
+};
+RK.Data.vsStartingZombies = ['ZOM_NORMAL', 'ZOM_NURSE', 'ZOM_CONE', 'ZOM_BUCKET', 'ZOM_HEAVY', 'RZ_ROCK', 'RZ_FARMER', 'BOSS_GIANT_ZOMBIE_KUMA'];

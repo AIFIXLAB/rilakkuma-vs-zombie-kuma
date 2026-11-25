@@ -1,4 +1,38 @@
-# Asset Manifest & Report
+# Asset Report — Full Version 1.0
+
+## ⚠️ ภาพที่ Claude เลือกจับคู่เอง — กรุณาตรวจ
+
+ทุกภาพมาจากชุด `kumazombie.zip` ของผู้ใช้ ไม่มีภาพที่วาดขึ้นใหม่ · แต่เอกสารไม่ได้บอกว่าภาพไหนเป็นตัวไหน รายการด้านล่างจึงเป็นการเดาจากหน้าตา:
+
+**ซอมบี้เมือง 2–8 และซอมบี้กิจกรรม (49 ตัว)** ย้ายจาก `Unassigned` (แผ่น 48 แบบ + แผ่น pixel 36 แบบ): `ZOM_NINJA`, `ZOM_SAKURA`, `ZOM_CRAB`, `ZOM_LIFEGUARD`, `ZOM_FOREST`, `ZOM_MUSHROOM`, `ZOM_PLANT`, `ZOM_POISON`, `ZOM_FROZEN_KNIGHT`, `ZOM_ICE_THROWER`, `ZOM_ICE_GIANT`, `ZOM_PHARAOH`, `ZOM_SAND`, `ZOM_SCARAB`, `ZOM_PHARAOH_KING`, `ZOM_FIRE`, `ZOM_MAGMA`, `ZOM_FLYING`, `ZOM_ANGEL`, `ZOM_SAKURA_DEMON`, `EV_JACK`, `EV_CAKE`, `EV_CUPCAKE`, `EV_BRIDE`, `EV_JIANGSHI`, `EV_SODA`, `EV_POPCORN`, `EV_DONUT`, `EV_BURGER`, `EV_FRIES`, `EV_GENTLEMAN`, `EV_MAGICIAN`, `EV_VOODOO`, `EV_TRIPLE`, `ZOM_SURFER`, `ZOM_SNOW`, `ZOM_ICE`, `ZOM_DARK`, `EV_SKELETON`, `EV_REAPER`, `EV_VAMPIRE`, `EV_YUREI`, `EV_REINDEER`, `EV_CHICK`, `EV_BUNNY`, `EV_PUPPY`, `EV_BOAR`, `EV_WOLF`, `EV_CAT`
+
+**บอส/มินิบอสประจำเมือง:**
+| เมือง | บอส (ด่าน 15) | มินิบอส (ด่าน 10) |
+|---|---|---|
+| 1 ริลัคคุมะ | BOSS_GIANT_ZOMBIE_KUMA | BOSS_TANK (รถถัง) |
+| 2 ซากุระ | ZOM_SAKURA_DEMON | ZOM_SAMURAI |
+| 3 ชายทะเล | BOSS_TENTACLE | ZOM_PIRATE |
+| 4 ป่า | ZOM_MUSHROOM_KING | BOSS_TOXIC_SLIME |
+| 5 หิมะ | ZOM_ICE_GIANT | ZOM_FROZEN_KNIGHT |
+| 6 ทะเลทราย | ZOM_PHARAOH_KING | ZOM_MUMMY |
+| 7 ภูเขาไฟ | BOSS_SPIKE_ARMOR | ZOM_MAGMA |
+| 8 ปราสาทลอยฟ้า | BOSS_FINAL_KING | ZOM_DARK |
+
+**กับดัก 15 แบบ** จับคู่จากแผ่นกับดัก 47 แบบ (เลขช่องในแผ่น → กับดัก): 14→TRAP_BANANA_PEEL, 17→TRAP_ICE_CRYSTAL, 19→TRAP_TORNADO, 7→TRAP_BEAR_BITE, 25→TRAP_BOXING_GLOVE, 20→TRAP_ALARM, 9→TRAP_BUG_SWATTER, 2→TRAP_FRYING_PAN, 3→TRAP_WATER_BUCKET, 4→TRAP_NET, 18→TRAP_ELECTRIC_FAN, 6→TRAP_SPIKE, 8→TRAP_STICKY_GLUE, 26→TRAP_ROLLING_PIN_CANDIDATE, 21→TRAP_SPRING
+- **Banana Peel ไม่มีภาพในชุด** → ใช้ภาพ **ฟองสบู่** แทน (ชื่อในเกม "เปลือกกล้วยลื่น (ฟองสบู่)")
+- Rolling Pin ใช้ภาพลูกกลิ้งที่ใกล้ที่สุด
+
+**ชุดแต่งตัว** ไม่มีภาพชุดแยก → ใช้การย้อมสีภาพตัวละครเดิมด้วยโค้ด (มิ้นต์, ทอง, ฮาโลวีน ฯลฯ) — ไม่ได้วาดชุดใหม่
+**อุปกรณ์/วัตถุดิบ/สกุลเงิน** ใช้ไอคอนจากชุด UI ของผู้ใช้ (บางชิ้นย้อมสีเพื่อแยกประเภท)
+
+## การรวมภาพสำหรับ GitHub
+ภาพ sprite 247 ชิ้นรวมเป็น atlas 4 แผ่น (`Assets/atlas/bears1, zombies1, zombies2, ui1` ขนาดไม่เกิน 2048×2048 ปลอดภัยกับหน่วยความจำ iPad) ภาพเต็มจอ 24 ภาพเป็นไฟล์ JPG แยก · สร้างด้วย `tools/pack_atlas.py` จากรายการภาพที่เกมใช้จริง
+
+---
+
+# (ด้านล่าง: รายงานการตัดภาพครั้งแรก — Phase 1)
+
+## Asset Manifest & Report (Phase 1)
 
 สร้างจากไฟล์ภาพต้นฉบับ 37 ไฟล์ (sprite sheet 10 ไฟล์ + ภาพเต็มจอ 27 ไฟล์) → ตัดเป็น **301 รายการ**
 
@@ -34,7 +68,7 @@
 - **เสียงทั้งหมด** (BGM/SFX) — ระบบเสียงต่อสายไว้ครบทุก Event แต่ปิดเสียงไว้ (doc PART 24)
 - **Animation frame** ของตัวละคร — ทุกตัวมีภาพเดียว ใช้เป็น Static Sprite + การขยับด้วย transform (เด้ง/พุ่ง/กะพริบ/ล้ม) ไม่ได้วาดเฟรมใหม่ (doc PART 23); ยกเว้นเครื่องโดนัทที่มีเฟรมผลิตจริง 4 เฟรม
 - **กระสุนฝ่ายหมี** — ใช้ภาพโดนัทจากชุดโรงงาน; ช็อกโกโดนัทใช้ filter สีน้ำตาล
-- **Banana Peel trap** — ไม่พบในชุดกับดัก 47 แบบ; Rolling Pin ใช้ภาพลูกกลิ้งที่ใกล้เคียงที่สุด (ระบุเป็น CANDIDATE)
+- **Banana Peel trap** — ไม่พบในชุดกับดัก 47 แบบ → ใช้ภาพฟองสบู่
 - **ศัตรูเมือง 2–8** ส่วนใหญ่ (Samurai/Ninja/Beach/Snow ฯลฯ) — มีซอมบี้ธีมบางตัวใน a03/a06 แต่ต้องให้ผู้ใช้ยืนยันการจับคู่
 - **บอสเมือง 2–7** — มีภาพบอสใหญ่ 6 ตัว; จับคู่แน่นอนแค่ Giant Zombie Kuma (Town 1)
 - **ปุ่ม Pause / ปุ่มเปล่าไม่มีตัวหนังสือ / Panel แบบยืดได้ (9-slice)** — วาดด้วยโค้ดโดยใช้สีจากชุด UI ของผู้ใช้

@@ -36,6 +36,39 @@
         function tick() { done++; onProgress && onProgress(done / jobs.length); if (done === jobs.length) finish(); }
       });
     },
+    // ---- recolours built with canvas blend modes (no pixel reads, no ctx.filter — works on iPad Safari) ----
+    _cache: {},
+    TINTS: { choco: ['#6B3A1E', 0.75], red: ['#E8434B', 0.6], green: ['#4FC45A', 0.7], blue: ['#3AA0F0', 0.7], cream: ['#FFE9B0', 0.6], fire: ['#FF6A1A', 0.7], pink: ['#FF7FB8', 0.6],
+      ice: ['#9BE3FF', 0.75], purple: ['#A34FE8', 0.75], dark: ['#3A3A44', 0.6], gold: ['#FFC21A', 0.7], rainbow: ['#FF4FD8', 0.55] },
+    recolor(id, color, amount, dark) {
+      const key = id + '|' + color + '|' + amount + '|' + (dark || 0);
+      if (this._cache[key]) return this._cache[key];
+      const img = this.images[id]; if (!img) return null;
+      const w = img.width, h = img.height, mk = () => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+      const out = mk(), o = out.getContext('2d'); o.drawImage(img, 0, 0);
+      if (color) {
+        const col = mk(), x = col.getContext('2d');
+        x.drawImage(img, 0, 0); x.globalCompositeOperation = 'color'; x.fillStyle = color; x.fillRect(0, 0, w, h);
+        x.globalCompositeOperation = 'destination-in'; x.drawImage(img, 0, 0);
+        o.globalAlpha = amount; o.drawImage(col, 0, 0); o.globalAlpha = 1;
+      }
+      if (dark) { o.globalCompositeOperation = 'source-atop'; o.fillStyle = `rgba(0,0,0,${dark})`; o.fillRect(0, 0, w, h); }
+      return (this._cache[key] = out);
+    },
+    skin(id, costume) { const c = costume && RK.Data.costumes[costume]; if (!c || !c.tint) return this.images[id]; return this.recolor(id, c.tint, c.amount, c.dark) || this.images[id]; },
+    tinted(id, tint) { const t = tint && this.TINTS[tint]; if (!t) return this.images[id]; return this.recolor(id, t[0], t[1]) || this.images[id]; },
+    silhouette(id) {
+      const key = id + '|sil'; if (this._cache[key]) return this._cache[key];
+      const img = this.images[id]; if (!img) return null;
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const x = c.getContext('2d');
+      x.drawImage(img, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = 'rgba(60,40,30,0.55)'; x.fillRect(0, 0, c.width, c.height);
+      return (this._cache[key] = c);
+    },
+    // draw any image/canvas fitted into a box
+    fitImg(ctx, img, x, y, w, h, alignBottom) {
+      if (!img) return null; const s = Math.min(w / img.width, h / img.height), dw = img.width * s, dh = img.height * s;
+      const dx = x + (w - dw) / 2, dy = alignBottom ? y + h - dh : y + (h - dh) / 2; ctx.drawImage(img, dx, dy, dw, dh); return { x: dx, y: dy, w: dw, h: dh };
+    },
     get(id) { return this.images[id]; },
     // Draw image fitted inside box (keeps aspect ratio — doc 22.2 "ไม่บีบภาพ")
     drawFit(ctx, id, x, y, w, h, alignBottom) {
@@ -53,23 +86,8 @@
       ctx.drawImage(img, cx - dw / 2, footY - height, dw, height);
     }
   };
-  // Everything Phase 1 needs at start-up
-  A.PRELOAD = [
-    'BG_TITLE', 'BG_LOBBY', 'BG_SELECT_TOWN', 'MAP_TOWN1', 'CUT_INTRO',
-    'FACTORY_LV1', 'FACTORY_LV2', 'FACTORY_LV3', 'FACTORY_LV4', 'FACTORY_LV5',
-    'FACTORY_ANIM_HEATING', 'FACTORY_ANIM_BAKING', 'FACTORY_ANIM_EJECT', 'FX_SPARKLE',
-    'DONUT_NORMAL',
-    'DEF_POT_SHIELD', 'DEF_SPRAY', 'DEF_CARDBOARD', 'DEF_FAN', 'DEF_MOP_CAT', 'DEF_LAUNDRY_PANDA',
-    'ATK_DONUT_KUMA', 'ATK_DONUT_KORI', 'ATK_LADLE_TORI', 'ATK_ROLLINGPIN_CHEF', 'ATK_DONUT_CANNON', 'ATK_GOGGLE_CAT', 'ATK_UMBRELLA_PANDA', 'ATK_CHOCO_KUMA',
-    'ZOM_NORMAL', 'ZOM_NURSE', 'ZOM_HEAVY', 'ZOM_CONE', 'ZOM_BUCKET', 'BOSS_GIANT_ZOMBIE_KUMA',
-    'RZ_ROCK', 'RZ_BUILDER', 'RZ_CHEF', 'RZ_FARMER', 'RZ_TRASH', 'RZ_TOXIC',
-    'PROJ_ROCK', 'PROJ_BRICK', 'PROJ_EGG', 'PROJ_TOMATO', 'PROJ_CAN', 'PROJ_POISON_BOTTLE',
-    'UI_ICON_HEART', 'UI_ICON_COIN', 'UI_ICON_HOURGLASS', 'UI_ICON_LOCK', 'UI_ICON_STAR', 'UI_ICON_STAR_BRONZE', 'UI_ICON_SETTINGS',
-    'UI_ICON_PLAY', 'UI_ICON_ARROW_LEFT', 'UI_ICON_ARROW_RIGHT', 'UI_ICON_CHECK',
-    'UI_ICON_UPGRADE', 'UI_ICON_EXP',
-    'UI_CARD_FRAME_EMPTY', 'UI_RIBBON_YELLOW', 'UI_RIBBON_BLUE', 'UI_RIBBON_RED',
-    'UI_TOGGLE_ON', 'UI_TOGGLE_OFF',
-    'BTN_START', 'BTN_RECEIVE', 'BTN_GO', 'BTN_UPGRADE', 'BTN_BUY', 'BTN_CANCEL',
-    'UI_FX_HIT_SPLAT', 'UI_FX_CLOUD', 'UI_FX_TWINKLE', 'UI_FX_STAR_GLOW', 'UI_FX_BURST_LINES'
-  ];
+  // Sprites (PNG / atlas) are loaded at start-up; full-screen JPG boards load in the background after the title shows
+  A.allSprites = () => Object.keys(RK.Data.atlas || {}).concat(Object.keys(RK.Data.assetFiles).filter(id => /\.png$/i.test(RK.Data.assetFiles[id]) && !/Unassigned/.test(RK.Data.assetFiles[id])));
+  A.allScreens = () => Object.keys(RK.Data.assetFiles).filter(id => /\.jpe?g$/i.test(RK.Data.assetFiles[id]) && !/Unassigned/.test(RK.Data.assetFiles[id]));
+  A.BOOT_SCREENS = ['BG_TITLE', 'BG_LOBBY', 'BG_SELECT_TOWN', 'MAP_TOWN1'];
 })();

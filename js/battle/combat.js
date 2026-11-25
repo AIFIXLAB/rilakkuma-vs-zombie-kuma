@@ -15,8 +15,10 @@
     applyDamage(battle, target, base, o) {
       o = o || {};
       if (!target || target.dead || target.dying) return 0;           // never die twice (doc 11.5)
-      const crit = o.canCrit && RK.RNG.next() < CFG.critChance;
-      let dmg = base * (o.multiplier || 1) * (crit ? CFG.critMultiplier : 1);
+      const crit = o.canCrit && RK.RNG.next() < CFG.critChance + (o.crit || 0);
+      let dmg = base * (o.multiplier || 1) * (o.atkMul || 1) * (crit ? CFG.critMultiplier : 1);
+      if (target.flying && o.antiAir) dmg *= o.antiAir;
+      if (o.source && o.source.side === 'bear' && o.source.facing < 0) o.fromFront = false;   // hitting a shield zombie from behind
       const def = o.ignoreDef ? 0 : (target.def || 0);
       dmg = Math.max(CFG.minimumDamage, dmg - def);
       let dr = target.damageReduction || 0;
@@ -31,9 +33,11 @@
       target.hp -= left;
       target.lastHitT = battle.t; target.hitFlash = 0.14;
       const type = crit ? 'crit' : (o.type === 'heavy' || dmg >= CFG.heavyDamageThreshold ? 'heavy' : (o.type || 'normal'));
-      battle.damageNumber(target, dmg, type);
+      if (!o.quiet || (target._qn = (target._qn || 0) + 1) % 4 === 0) battle.damageNumber(target, o.quiet ? dmg * 4 : dmg, type);
       battle.stats.damageDealt[target.side] = (battle.stats.damageDealt[target.side] || 0) + dmg;
       if (o.status) Combat.addStatus(target, o.status);
+      // thorns / reflect (melee only)
+      if (o.melee && target.reflect && o.source && !o.source.dying && left > 0) Combat.applyDamage(battle, o.source, dmg * target.reflect, { type: 'normal', ignoreDef: true });
       if (target.hp <= 0) battle.kill(target, o.source);
       return dmg;
     },
@@ -44,6 +48,7 @@
       if (!s || target.dead || target.dying) return;
       if (s.chance !== undefined && RK.RNG.next() > s.chance) return;
       if (target.statusImmune && target.statusImmune.includes(s.type)) return;
+      if ((target.isBoss || target.isMini) && (s.type === 'stun' || s.type === 'freeze')) s = Object.assign({}, s, { duration: s.duration * 0.3 });   // bosses resist control
       const cur = target.status[s.type];
       if (s.type === 'knockback') return;   // handled directly
       if (cur) { cur.t = Math.max(cur.t, s.duration); cur.strength = Math.max(cur.strength, s.strength); }
@@ -55,7 +60,7 @@
         s.t -= dt;
         if (k === 'poison' || k === 'burn' || k === 'bleed') {
           s.tick += dt;
-          if (s.tick >= 1) { s.tick -= 1; Combat.applyDamage(battle, e, s.strength, { type: 'poison', ignoreDef: true }); }
+          if (s.tick >= 1) { s.tick -= 1; Combat.applyDamage(battle, e, s.strength * (e.side === 'zombie' ? 1 : 1), { type: k === 'burn' ? 'heavy' : 'poison', ignoreDef: true }); }
         }
         if (k === 'regeneration') { s.tick += dt; if (s.tick >= 1) { s.tick -= 1; e.hp = Math.min(e.maxHp, e.hp + s.strength); } }
         if (s.t <= 0) delete e.status[k];
@@ -64,6 +69,7 @@
     speedMult(e) {
       if (e.status.stun || e.status.freeze) return 0;
       let m = 1;
+      if (e.status.burn) m *= 1;
       if (e.status.slow) m *= (1 - e.status.slow.strength);
       if (e.status.wet) m *= (1 - e.status.wet.strength);
       return Math.max(0.1, m);

@@ -16,12 +16,15 @@
     RK.Music.applyVolume();
     E.init();
     E.setScene(Loading);
-    RK.Assets.load(RK.Assets.PRELOAD, p => Loading.p = p).then(() => {
+    const boot = Array.from(new Set(RK.Assets.allSprites().concat(RK.Assets.BOOT_SCREENS)));
+    RK.Assets.load(boot, p => Loading.p = p).then(() => {
       if (RK.Assets.failed.length) RK.UI.toast('โหลดภาพไม่สำเร็จ ' + RK.Assets.failed.length + ' ไฟล์', 4);
-      window.RK_READY = true;
       E.setScene(RK.Scenes.title);
+      // remaining boards / screens stream in while the player is on the title screen
+      RK.Assets.load(RK.Assets.allScreens()).then(() => { window.RK_ALL_LOADED = true; });
+      window.RK_READY = true;
     });
   });
   // Playtime tracking
-  setInterval(() => { if (RK.Save.data && !document.hidden) { RK.Save.data.stats.playTime += 10; } }, 10000);
+  setInterval(() => { if (RK.Save.data && !document.hidden) { RK.Save.data.stats.playTime += 10; RK.Save.saveSoon('playtime'); } }, 10000);
 })();

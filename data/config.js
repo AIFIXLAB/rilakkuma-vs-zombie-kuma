@@ -3,8 +3,8 @@ window.RK = window.RK || {};
 RK.Data = RK.Data || {};
 
 RK.Data.config = {
-  version: '0.1.0-phase1',
-  saveVersion: 1,
+  version: '1.0.0-full',
+  saveVersion: 2,
   screen: { width: 1672, height: 941 },       // logical resolution (matches the battlefield art)
   fixedStep: 1 / 60,                           // simulation step (seconds)
   donut: {

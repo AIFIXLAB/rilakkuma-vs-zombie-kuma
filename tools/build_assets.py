@@ -50,13 +50,33 @@ bs=[('BOSS_GIANT_ZOMBIE_KUMA','Giant Zombie Kuma','Town 1 Boss','assigned'),('BO
     ('BOSS_TOXIC_SLIME','Toxic Slime Zombie','candidate Boss (Town 4?)','unassigned'),('BOSS_FINAL_KING','Final King Zombie Kuma (candidate)','Town 8 Boss candidate','unassigned')]
 for k,(aid,n,r,st) in enumerate(bs):
     put(f'{S}/boss_{k}.png','Bosses',aid.lower()+'.png',aid,n,'Boss',r,'Front/Left',status=st,sheet='a02',maxdim=420)
+# ---- zombies promoted from the unassigned pools (town / event enemies) ----
+PROMO48 = {19:('ZOM_NINJA','Ninja Zombie'),20:('ZOM_SAKURA','Sakura Zombie'),41:('ZOM_CRAB','Crab Zombie'),9:('ZOM_LIFEGUARD','Lifeguard Zombie'),
+  29:('ZOM_FOREST','Forest Zombie'),33:('ZOM_MUSHROOM','Mushroom Zombie'),42:('ZOM_PLANT','Plant Zombie'),30:('ZOM_POISON','Poison Zombie'),
+  14:('ZOM_FROZEN_KNIGHT','Frozen Knight'),10:('ZOM_ICE_THROWER','Ice Thrower'),31:('ZOM_ICE_GIANT','Ice Giant Kuma'),3:('ZOM_PHARAOH','Pharaoh Zombie'),
+  46:('ZOM_SAND','Sand Zombie'),44:('ZOM_SCARAB','Scarab Zombie'),48:('ZOM_PHARAOH_KING','Pharaoh Giant Kuma'),32:('ZOM_FIRE','Fire Zombie'),
+  25:('ZOM_MAGMA','Magma Zombie'),17:('ZOM_FLYING','Flying Zombie'),26:('ZOM_ANGEL','Angel Zombie'),21:('ZOM_SAKURA_DEMON','Sakura Demon Kuma'),
+  27:('EV_JACK','Jack-o-Lantern Zombie'),34:('EV_CAKE','Christmas Cake Zombie'),40:('EV_CUPCAKE','Cupcake Zombie'),22:('EV_BRIDE','Bride Zombie'),
+  18:('EV_JIANGSHI','Jiangshi Zombie'),35:('EV_SODA','Soda Zombie'),36:('EV_POPCORN','Popcorn Zombie'),39:('EV_DONUT','Donut Zombie'),
+  37:('EV_BURGER','Burger Zombie'),38:('EV_FRIES','Fries Zombie'),8:('EV_GENTLEMAN','Gentleman Zombie'),23:('EV_MAGICIAN','Magician Zombie'),
+  24:('EV_VOODOO','Voodoo Zombie'),45:('EV_TRIPLE','Triple-Head Zombie')}
+PROMOPIX = {35:('ZOM_SURFER','Surfer Zombie'),33:('ZOM_SNOW','Snow Zombie'),20:('ZOM_ICE','Ice Zombie'),21:('ZOM_DARK','Dark Zombie'),
+  19:('EV_SKELETON','Skeleton Zombie'),27:('EV_REAPER','Reaper Zombie'),25:('EV_VAMPIRE','Vampire Zombie'),18:('EV_YUREI','Yurei Zombie'),
+  34:('EV_REINDEER','Reindeer Zombie'),31:('EV_CHICK','Chick Zombie'),28:('EV_BUNNY','Bunny Zombie'),30:('EV_PUPPY','Puppy Zombie'),
+  32:('EV_BOAR','Boar Zombie'),36:('EV_WOLF','Wolf Zombie'),29:('EV_CAT','Cat Zombie')}
+for k,(aid,n) in PROMO48.items(): put(f'{S}/a06_{k-1:02d}.png','Zombies/Town' if aid.startswith('ZOM') else 'Zombies/Event',aid.lower()+'.png',aid,n,'Zombie','Town/Event enemy','Front',status='assigned',sheet='a06',note='promoted from Unassigned; image chosen by Claude — please confirm')
+for k,(aid,n) in PROMOPIX.items(): put(f'{S}/a02_{k-1:02d}.png','Zombies/Town' if aid.startswith('ZOM') else 'Zombies/Event',aid.lower()+'.png',aid,n,'Zombie','Town/Event enemy','Front',status='assigned',sheet='a02',note='promoted from Unassigned; image chosen by Claude — please confirm')
 # extra zombie sheets -> Unassigned pool (listed for user review)
-for k in range(36): put(f'{S}/a02_{k:02d}.png','Unassigned/ZombiePixel',f'zombie_pixel_{k+1:02d}.png',f'UNA_ZPIX_{k+1:02d}','Pixel zombie #'+str(k+1),'Zombie','?','Front',status='unassigned',sheet='a02')
-for k in range(48): put(f'{S}/a06_{k:02d}.png','Unassigned/Zombie48',f'zombie48_{k+1:02d}.png',f'UNA_Z48_{k+1:02d}','Zombie variant #'+str(k+1),'Zombie','?','Front',status='unassigned',sheet='a06')
+for k in range(36):
+    if k+1 in PROMOPIX: continue
+    put(f'{S}/a02_{k:02d}.png','Unassigned/ZombiePixel',f'zombie_pixel_{k+1:02d}.png',f'UNA_ZPIX_{k+1:02d}','Pixel zombie #'+str(k+1),'Zombie','?','Front',status='unassigned',sheet='a02')
+for k in range(48):
+    if k+1 in PROMO48: continue
+    put(f'{S}/a06_{k:02d}.png','Unassigned/Zombie48',f'zombie48_{k+1:02d}.png',f'UNA_Z48_{k+1:02d}','Zombie variant #'+str(k+1),'Zombie','?','Front',status='unassigned',sheet='a06')
 for k,n in enumerate(['Pirate','Samurai','Wizard','Scientist','Mummy','Devil','Pumpkin','Plague Doctor']):
     put(f'{S}/a03_{k:02d}.png','Zombies/Themed',f'zombie_{n.lower().replace(" ","_")}.png',f'ZOM_{n.upper().replace(" ","_")}',n+' Zombie','Zombie','Themed (later towns)','Left',status='assigned-phase3')
 # Traps (10 from doc mapped; rest unassigned)
-trapmap={9:'TRAP_BUG_SWATTER',2:'TRAP_FRYING_PAN',3:'TRAP_WATER_BUCKET',4:'TRAP_NET',18:'TRAP_ELECTRIC_FAN',6:'TRAP_SPIKE',8:'TRAP_STICKY_GLUE',26:'TRAP_ROLLING_PIN_CANDIDATE',21:'TRAP_SPRING'}
+trapmap={14:'TRAP_BANANA_PEEL',17:'TRAP_ICE_CRYSTAL',19:'TRAP_TORNADO',7:'TRAP_BEAR_BITE',25:'TRAP_BOXING_GLOVE',20:'TRAP_ALARM',9:'TRAP_BUG_SWATTER',2:'TRAP_FRYING_PAN',3:'TRAP_WATER_BUCKET',4:'TRAP_NET',18:'TRAP_ELECTRIC_FAN',6:'TRAP_SPIKE',8:'TRAP_STICKY_GLUE',26:'TRAP_ROLLING_PIN_CANDIDATE',21:'TRAP_SPRING'}
 for k in range(48):
     p=f'{S}/a10_{k:02d}.png'
     if not os.path.exists(p): continue
@@ -77,11 +97,23 @@ ui={'01':'icon_play','36':'icon_settings','57':'icon_coin','63':'icon_hourglass'
     '08':'icon_shop','09':'icon_gacha','11':'icon_event','13':'icon_mission','14':'icon_achievement','19':'icon_collection','20':'icon_crown','81':'icon_exp','61':'icon_clock','47':'icon_help_info','46':'icon_alert',
     '131':'card_frame_kuma','132':'card_frame_kori','149':'card_frame_empty','106':'panel_dialog','109':'ribbon_yellow','134':'ribbon_blue','148':'ribbon_pink','141':'ribbon_red','135':'bar_green','152':'bar_yellow','153':'bar_blue','154':'bar_purple',
     '107':'bubble_white','108':'bubble_cream','110':'burst_white','115':'toggle_on','116':'toggle_off','137':'checkbox_empty','136':'checkbox_checked',
+    '60':'icon_gem','31':'icon_ticket','66':'icon_ticket_bear','68':'icon_mystery_box','17':'icon_bag','18':'icon_crate','35':'icon_gift2',
+    '95':'icon_honey','103':'icon_recipe','64':'icon_rainbow_sugar','80':'icon_iron','85':'icon_fragment','89':'icon_clover','65':'icon_rocket',
+    '56':'icon_battery','61':'icon_alarm','55':'icon_medkit','83':'icon_crown_gold','97':'icon_candy','91':'icon_cake','99':'icon_lollipop',
+    '96':'icon_drink','100':'icon_cupcake','93':'icon_apple','33':'icon_calendar_login','15':'icon_mail','25':'icon_megaphone','22':'icon_friends',
+    '102':'icon_gold_star_coin','58':'icon_coins_pile','62':'icon_ruby','82':'icon_crystal','105':'icon_bear_bag','23':'icon_handshake',
+    '28':'icon_question','51':'icon_plus','71':'icon_hammer','73':'icon_wrench','70':'icon_key','92':'icon_pancake','98':'icon_bear_cookie',
     '120':'fx_loading_dots','121':'fx_star_glow','122':'fx_twinkle','128':'fx_hit_splat','126':'fx_cloud','118':'fx_burst_lines'}
 for k,n in ui.items():
     p=f'{S}/a04_{k}.png'
     put(p,'UI/Icons' if n.startswith('icon') else ('Effects' if n.startswith('fx') else 'UI'),n+'.png','UI_'+n.upper(),n.replace('_',' '),'UI','','',sheet='a04',maxdim=256)
+import numpy as _np
+from scipy import ndimage as _nd
+def _trim_btn(p):
+    A=_np.array(Image.open(p).convert('RGBA')); m=A[:,:,3]>30; lab,k=_nd.label(m); sz=_nd.sum(m,lab,range(1,k+1)); big=_nd.binary_dilation(lab==(_np.argmax(sz)+1),iterations=2)
+    A[~big]=0; ys,xs=_np.where(A[:,:,3]>0); Image.fromarray(A[ys.min():ys.max()+1,xs.min():xs.max()+1]).save(p)
 for n in ['start','receive','go','upgrade','buy','cancel']:
+    _trim_btn(f'{S}/btn_{n}.png')
     put(f'{S}/btn_{n}.png','UI/Buttons',f'btn_{n}.png','BTN_'+n.upper(),'Button '+n,'Button','','',sheet='a04',maxdim=0)
 # Full-screen
 for sid,fold,fn,aid,n,t in [('a29','Maps','town1_rilakkuma_board.jpg','MAP_TOWN1','Town 1 Rilakkuma Town battlefield','Battlefield'),
@@ -103,7 +135,9 @@ for sid,fold,fn,aid,n,t in [('a29','Maps','town1_rilakkuma_board.jpg','MAP_TOWN1
   ('a25','Cutscenes','donut_comic.jpg','CUT_DONUT','Donut comic (4 panels)','Cutscene'),
   ('a19','Cutscenes','blood_moon.jpg','CUT_BLOODMOON','Blood moon horde scene','Cutscene')]:
     bg(sid,fold,fn,aid,n,t)
-for sid,n in [('a05','Night cafe board (stone, 9x5?)'),('a11','Night pixel board'),('a20','Autumn farm board'),('a22','Seaside board alt'),('a23','Backyard board'),('a24','Neon city board'),('a15','Select Town screen (duplicate of townmap copy)')]:
+for sid,fn,aid,n in [('a05','event_sakura_night.jpg','MAP_EV_SAKURA','Sakura Festival board (night street)'),('a11','event_halloween.jpg','MAP_EV_HALLOWEEN','Halloween board'),('a20','event_harvest.jpg','MAP_EV_HARVEST','Harvest board (autumn farm)'),('a22','event_summer.jpg','MAP_EV_SUMMER','Summer Beach board'),('a23','event_donut.jpg','MAP_EV_DONUT','Donut Festival board (backyard)'),('a24','event_anniversary.jpg','MAP_EV_ANNIV','Anniversary board (neon city)')]:
+    bg(sid,'Maps',fn,aid,n,'Battlefield',note='event map chosen by Claude')
+for sid,n in [('a15','Select Town screen (duplicate of townmap copy)')]:
     bg(sid,'Unassigned/Boards',f'{sid}_{n.split()[0].lower()}.jpg','UNA_'+sid.upper(),n,'Battlefield','unassigned','Extra board/alt — choose which town or event uses it')
 json.dump(M,open(f'{G}/Assets/asset_manifest.json','w'),ensure_ascii=False,indent=1)
 print(len(M))
